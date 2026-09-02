@@ -1,0 +1,6 @@
+{
+  "name": "study.dermaa",
+  "description": "Platform pendidikan digital KSSM Malaysia untuk pelajar Tingkatan 1 hingga 5 dengan nota interaktif, kuiz KSSM, penjejak streak, dan sistem gamifikasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,228 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile data for students and administrators",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "username": { "type": "string" },
+        "usernameLowercase": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "authEmail": { "type": "string" },
+        "school": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "xp": { "type": "number" },
+        "level": { "type": "number" },
+        "streak": { "type": "number" },
+        "longestStreak": { "type": "number" },
+        "lastActiveDate": { "type": "string" },
+        "completedNotesCount": { "type": "number" },
+        "completedQuizzesCount": { "type": "number" },
+        "bookmarks": { "type": "array" },
+        "themePreference": { "type": "string" },
+        "colorMode": { "type": "string" },
+        "isSuspended": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "username", "usernameLowercase", "fullName", "role", "xp", "level", "createdAt"]
+    },
+    "UsernameRecord": {
+      "title": "UsernameRecord",
+      "description": "Mapping from lowercase username to uid and internal authEmail",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "authEmail": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "createdAt"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Curriculum Subject",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "iconName": { "type": "string" },
+        "category": { "type": "string" },
+        "tingkatanList": { "type": "array" },
+        "order": { "type": "number" },
+        "published": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "code", "published"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "description": "Subject chapter or unit",
+      "type": "object",
+      "properties": {
+        "subjectId": { "type": "string" },
+        "title": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "order": { "type": "number" },
+        "published": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["subjectId", "title", "published"]
+    },
+    "Topic": {
+      "title": "Topic",
+      "description": "Subject topic within chapter",
+      "type": "object",
+      "properties": {
+        "chapterId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "number" },
+        "published": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["chapterId", "title", "published"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "Learning note or lesson content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "chapterTitle": { "type": "string" },
+        "summary": { "type": "string" },
+        "content": { "type": "string" },
+        "keyPoints": { "type": "array" },
+        "readTimeMinutes": { "type": "number" },
+        "published": { "type": "boolean" },
+        "viewCount": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "subjectId", "content", "published"]
+    },
+    "Quiz": {
+      "title": "Quiz",
+      "description": "Quiz assessment set",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "description": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "questionCount": { "type": "number" },
+        "passPercentage": { "type": "number" },
+        "published": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "subjectId", "published"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Question within a quiz",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "question": { "type": "string" },
+        "type": { "type": "string", "enum": ["objective", "subjective", "kbat"] },
+        "options": { "type": "array" },
+        "correctAnswer": { "type": "string" },
+        "marks": { "type": "number" },
+        "explanation": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["quizId", "question", "type", "marks"]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Quiz submission and result record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentUsername": { "type": "string" },
+        "quizId": { "type": "string" },
+        "quizTitle": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "startedAt": { "type": "string" },
+        "submittedAt": { "type": "string" },
+        "score": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "percentage": { "type": "number" },
+        "status": { "type": "string", "enum": ["passed", "failed"] },
+        "answers": { "type": "object" },
+        "xpEarned": { "type": "number" }
+      },
+      "required": ["uid", "quizId", "score", "totalMarks", "percentage", "submittedAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Platform announcement notice",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "badge": { "type": "string" },
+        "published": { "type": "boolean" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "content", "published"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles for registered students and admins"
+    },
+    "/usernameRegistry/{username}": {
+      "schema": "UsernameRecord",
+      "description": "Username mapping registry"
+    },
+    "/subjects/{subjectId}": {
+      "schema": "Subject",
+      "description": "Curriculum subjects"
+    },
+    "/chapters/{chapterId}": {
+      "schema": "Chapter",
+      "description": "Curriculum chapters"
+    },
+    "/topics/{topicId}": {
+      "schema": "Topic",
+      "description": "Curriculum topics"
+    },
+    "/notes/{noteId}": {
+      "schema": "Note",
+      "description": "Subject study notes"
+    },
+    "/quizzes/{quizId}": {
+      "schema": "Quiz",
+      "description": "Subject quizzes"
+    },
+    "/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Quiz questions"
+    },
+    "/quizAttempts/{attemptId}": {
+      "schema": "QuizAttempt",
+      "description": "Student quiz attempts and grades"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Site announcements"
+    }
+  }
+}

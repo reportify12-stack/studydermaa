@@ -1,0 +1,188 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny catch-all for any undefined paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ====================================================
+    // GLOBAL HARDENED HELPERS
+    // ====================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Admin verified via Firebase Auth custom claim OR Firestore role OR authorized developer/admin email
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'reportify12@gmail.com' ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        )
+      );
+    }
+
+    // ====================================================
+    // USER PROFILES (users/{userId})
+    // ====================================================
+    match /users/{userId} {
+      // Allow user to read own profile, or admins to read student profiles for analytics
+      allow read: if isOwner(userId) || isAdmin();
+
+      // On creation: must be the authenticated user creating their own profile
+      // Role MUST default strictly to 'student'
+      // Initial stats must be genuinely 0
+      allow create: if isOwner(userId) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.role == 'student' &&
+        request.resource.data.xp == 0 &&
+        request.resource.data.streak == 0 &&
+        request.resource.data.longestStreak == 0 &&
+        request.resource.data.level == 1 &&
+        request.resource.data.isSuspended == false;
+
+      // On update: students can update safe profile fields, but CANNOT escalate role, change UID, or tamper with suspension
+      // Admins can update any user record (including suspension / role assignment)
+      allow update: if (
+        isOwner(userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.isSuspended == resource.data.isSuspended
+      ) || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // ====================================================
+    // USERNAME REGISTRY (usernameRegistry/{usernameLowercase})
+    // ====================================================
+    match /usernameRegistry/{username} {
+      // Read allowed for username availability check and login auth email resolution
+      allow read: if true;
+
+      // Creation allowed during registration if not already taken
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        !exists(/databases/$(database)/documents/usernameRegistry/$(username));
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // SUBJECTS (subjects/{subjectId})
+    // ====================================================
+    match /subjects/{subjectId} {
+      // Students can read published subjects; Admins can read all (including drafts)
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // CHAPTERS (chapters/{chapterId})
+    // ====================================================
+    match /chapters/{chapterId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // TOPICS (topics/{topicId})
+    // ====================================================
+    match /topics/{topicId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // NOTES (notes/{noteId})
+    // ====================================================
+    match /notes/{noteId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // QUIZZES (quizzes/{quizId})
+    // ====================================================
+    match /quizzes/{quizId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // QUESTIONS (questions/{questionId})
+    // ====================================================
+    match /questions/{questionId} {
+      // Authenticated users can read questions to take quizzes
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // QUIZ ATTEMPTS (quizAttempts/{attemptId})
+    // ====================================================
+    match /quizAttempts/{attemptId} {
+      // Students can read only their own quiz attempts; Admins can view all submissions
+      allow read: if (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+      
+      // Students can submit an attempt only for their own UID
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      
+      allow update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // USER PROGRESS (userProgress/{userId}/notes/{noteId})
+    // ====================================================
+    match /userProgress/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+      
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // ====================================================
+    // BOOKMARKS (bookmarks/{bookmarkId})
+    // ====================================================
+    match /bookmarks/{bookmarkId} {
+      allow read: if (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+    }
+
+    // ====================================================
+    // ANNOUNCEMENTS (announcements/{announcementId})
+    // ====================================================
+    match /announcements/{announcementId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // ACHIEVEMENTS (achievements/{achievementId})
+    // ====================================================
+    match /achievements/{achievementId} {
+      allow read: if (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
+    // SETTINGS & CONFIGURATION (settings/{settingDoc})
+    // ====================================================
+    match /settings/{settingDoc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
