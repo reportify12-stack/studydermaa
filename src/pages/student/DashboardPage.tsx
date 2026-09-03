@@ -161,6 +161,41 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
         </div>
       </div>
 
+      {/* AI Tutor Interactive Banner */}
+      <div
+        id="dashboard-ai-tutor-banner"
+        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent dark:from-emerald-950/40 dark:via-teal-950/30 border border-emerald-200/80 dark:border-emerald-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
+      >
+        <div className="flex items-start gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 font-display">
+                Ada persoalan pembelajaran KSSM?
+              </h2>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+                Pintar & Pantas
+              </span>
+            </div>
+            <p className="text-xs text-stone-600 dark:text-stone-300 max-w-xl leading-relaxed">
+              Tanya soalan Matematik, Sains, Sejarah, atau Bahasa Melayu kepada CikguDermarians. Dapatkan penjelasan langkah demi langkah mengikut format KSSM terkini!
+            </p>
+          </div>
+        </div>
+
+        <button
+          id="dashboard-launch-tutor-btn"
+          onClick={() => navigate('/ai-tutor')}
+          className="px-5 py-2.5 rounded-2xl bg-theme-primary text-white text-xs font-bold hover:brightness-105 active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2 shrink-0"
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Buka CikguDermarians</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
       {/* Live Seminar Section on Dashboard */}
       {seminars.length > 0 && (
         <section id="dashboard-seminars-section" className="space-y-4">

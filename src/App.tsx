@@ -25,6 +25,8 @@ import { BookmarksPage } from './pages/student/BookmarksPage';
 import { ProfilePage } from './pages/student/ProfilePage';
 import { SettingsPage } from './pages/student/SettingsPage';
 import { SeminarsPage } from './pages/student/SeminarsPage';
+import { AiTutorPage } from './pages/student/AiTutorPage';
+import { AiTutorWidget } from './components/tutor/AiTutorWidget';
 
 // Pages - Admin
 import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
@@ -279,12 +281,14 @@ const AppContent: React.FC = () => {
       studentView = <SettingsPage navigate={navigate} />;
     } else if (currentPath === '/seminars' || currentPath === '/seminar' || currentPath === '/live-seminar') {
       studentView = <SeminarsPage navigate={navigate} />;
+    } else if (currentPath === '/ai-tutor' || currentPath === '/tutor') {
+      studentView = <AiTutorPage navigate={navigate} />;
     } else if (currentPath === '/dashboard' || currentPath === '/utama') {
       studentView = <DashboardPage navigate={navigate} />;
     }
 
     return (
-      <div className="min-h-screen bg-stone-50/60 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col">
+      <div className="min-h-screen bg-stone-50/60 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col relative">
         <Navbar
           onOpenSearch={() => setSearchModalOpen(true)}
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -334,6 +338,9 @@ const AppContent: React.FC = () => {
           onClose={() => setSearchModalOpen(false)}
           navigate={navigate}
         />
+
+        {/* Floating AI Tutor Widget */}
+        <AiTutorWidget navigate={navigate} currentRoute={currentPath} />
       </div>
     );
   };

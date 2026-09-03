@@ -258,3 +258,22 @@ export interface ThemeConfig {
   gradient: string;
   tagClass: string;
 }
+
+export type ChatRole = 'student' | 'model';
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  timestamp: string;
+  subject?: string;
+  isError?: boolean;
+}
+
+export interface AiTutorSubjectOption {
+  id: string;
+  name: string;
+  code: string;
+  iconName: string;
+  promptSuggestions: string[];
+}

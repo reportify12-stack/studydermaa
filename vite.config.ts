@@ -64,9 +64,85 @@ function aistudioMediaPlugin(): Plugin {
 }
 // LINT.ThenChange(//depot/google3/java/com/google/alkali/boq/makersuite/applet_dev_service/templates/initializers/react_theme/vite.config.ts:aistudio_media_plugin)
 
+function geminiChatPlugin(): Plugin {
+  return {
+    name: 'vite-plugin-gemini-chat',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.url && req.url.startsWith('/api/gemini/chat') && req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk;
+          });
+          req.on('end', async () => {
+            try {
+              const payload = JSON.parse(body || '{}');
+              const { messages, systemInstruction, model = 'gemini-3.8-flash' } = payload;
+
+              const apiKey = process.env.GEMINI_API_KEY;
+              if (apiKey) {
+                const { GoogleGenAI } = await import('@google/genai');
+                const ai = new GoogleGenAI({
+                  apiKey,
+                  httpOptions: {
+                    headers: {
+                      'User-Agent': 'aistudio-build',
+                    },
+                  },
+                });
+
+                const contents = (messages || []).map((m: any) => ({
+                  role: m.role === 'user' ? 'user' : 'model',
+                  parts: m.parts || [{ text: m.text || '' }],
+                }));
+
+                const defaultInstruction =
+                  "You are CikguDermarians, an encouraging, brilliant AI Tutor for the study.dermaa platform. You specialize in the Malaysian KSSM syllabus. Explain concepts clearly, step-by-step, and in a friendly tone using either standard Malay or English depending on the student's language.";
+
+                const response = await ai.models.generateContent({
+                  model: model || 'gemini-3.8-flash',
+                  contents,
+                  config: {
+                    systemInstruction: systemInstruction || defaultInstruction,
+                  },
+                });
+
+                res.setHeader('Content-Type', 'application/json');
+                res.end(
+                  JSON.stringify({
+                    reply: response.text,
+                    model: model || 'gemini-3.8-flash',
+                    source: 'gemini',
+                  })
+                );
+                return;
+              }
+
+              res.setHeader('Content-Type', 'application/json');
+              res.end(
+                JSON.stringify({
+                  source: 'fallback',
+                  message: 'No GEMINI_API_KEY configured in server environment.',
+                })
+              );
+            } catch (err: any) {
+              console.error('Gemini chat middleware error:', err);
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message || 'Server error' }));
+            }
+          });
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), aistudioMediaPlugin()],
+    plugins: [react(), tailwindcss(), aistudioMediaPlugin(), geminiChatPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
