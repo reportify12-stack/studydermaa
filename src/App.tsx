@@ -24,6 +24,7 @@ import { ProgressPage } from './pages/student/ProgressPage';
 import { BookmarksPage } from './pages/student/BookmarksPage';
 import { ProfilePage } from './pages/student/ProfilePage';
 import { SettingsPage } from './pages/student/SettingsPage';
+import { SeminarsPage } from './pages/student/SeminarsPage';
 
 // Pages - Admin
 import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
@@ -36,6 +37,7 @@ import { AdminResultsPage } from './pages/admin/AdminResultsPage';
 import { AdminAnnouncementsPage } from './pages/admin/AdminAnnouncementsPage';
 import { AdminStatisticsPage } from './pages/admin/AdminStatisticsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+import { AdminSeminarsPage } from './pages/admin/AdminSeminarsPage';
 
 import { Loader2 } from 'lucide-react';
 
@@ -129,6 +131,8 @@ const AppContent: React.FC = () => {
         adminView = <AdminResultsPage navigate={navigate} />;
       } else if (currentPath === '/admin/announcements') {
         adminView = <AdminAnnouncementsPage navigate={navigate} />;
+      } else if (currentPath === '/admin/seminars') {
+        adminView = <AdminSeminarsPage navigate={navigate} />;
       } else if (currentPath === '/admin/statistics') {
         adminView = <AdminStatisticsPage navigate={navigate} />;
       } else if (currentPath === '/admin/settings') {
@@ -273,6 +277,8 @@ const AppContent: React.FC = () => {
       studentView = <ProfilePage navigate={navigate} />;
     } else if (currentPath === '/tetapan' || currentPath === '/settings') {
       studentView = <SettingsPage navigate={navigate} />;
+    } else if (currentPath === '/seminars' || currentPath === '/seminar' || currentPath === '/live-seminar') {
+      studentView = <SeminarsPage navigate={navigate} />;
     } else if (currentPath === '/dashboard' || currentPath === '/utama') {
       studentView = <DashboardPage navigate={navigate} />;
     }

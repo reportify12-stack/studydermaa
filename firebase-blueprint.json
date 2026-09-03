@@ -181,6 +181,27 @@
         "createdAt": { "type": "string" }
       },
       "required": ["title", "content", "published"]
+    },
+    "Seminar": {
+      "title": "Seminar",
+      "description": "Live online interactive seminars, webinars, and workshops",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "meetingLink": { "type": "string" },
+        "status": { "type": "string", "enum": ["upcoming", "live", "completed"] },
+        "speaker": { "type": "string" },
+        "subject": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "targetAudience": { "type": "string" },
+        "recordingUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "description", "date", "time", "meetingLink", "status"]
     }
   },
   "firestore": {
@@ -223,6 +244,10 @@
     "/announcements/{announcementId}": {
       "schema": "Announcement",
       "description": "Site announcements"
+    },
+    "/seminars/{seminarId}": {
+      "schema": "Seminar",
+      "description": "Live seminars and interactive sessions"
     }
   }
 }

@@ -178,6 +178,14 @@ service cloud.firestore {
     }
 
     // ====================================================
+    // LIVE SEMINARS (seminars/{seminarId})
+    // ====================================================
+    match /seminars/{seminarId} {
+      allow read: if isSignedIn() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ====================================================
     // SETTINGS & CONFIGURATION (settings/{settingDoc})
     // ====================================================
     match /settings/{settingDoc} {

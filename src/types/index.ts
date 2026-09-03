@@ -220,6 +220,25 @@ export interface PlatformStats {
   averageQuizScore: number;
 }
 
+export type SeminarStatus = 'upcoming' | 'live' | 'completed';
+
+export interface Seminar {
+  id: string;
+  title: string;
+  description: string;
+  date: string; // YYYY-MM-DD or readable date string
+  time: string; // e.g. "20:30" or "8:30 PM"
+  meetingLink: string; // Zoom / Google Meet / Microsoft Teams link
+  status: SeminarStatus;
+  subject?: string;
+  speaker?: string;
+  tingkatan?: TingkatanType | 'Semua Tingkatan';
+  targetAudience?: string;
+  recordingUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type PastelThemeName = 
   | 'pastel-green'
   | 'pastel-blue'

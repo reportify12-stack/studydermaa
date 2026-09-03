@@ -10,6 +10,7 @@ import {
   Settings,
   Shield,
   Sparkles,
+  Video,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -30,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const studentNavItems = [
     { label: 'Utama', path: '/dashboard', icon: Home, id: 'nav-home' },
+    { label: 'Live Seminar', path: '/seminars', icon: Video, id: 'nav-seminars' },
     { label: 'Belajar', path: '/belajar', icon: BookOpen, id: 'nav-belajar' },
     { label: 'Nota', path: '/nota', icon: FileText, id: 'nav-nota' },
     { label: 'Kuiz', path: '/kuiz', icon: HelpCircle, id: 'nav-kuiz' },
@@ -56,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const Icon = item.icon;
           const isActive =
             currentRoute === item.path ||
+            (item.path === '/seminars' && (currentRoute === '/seminars' || currentRoute === '/seminar' || currentRoute === '/live-seminar')) ||
             (item.path === '/progress' && (currentRoute === '/kemajuan' || currentRoute === '/progress')) ||
             (item.path === '/bookmark' && (currentRoute === '/bookmark' || currentRoute === '/bookmarks')) ||
             (item.path === '/profile' && (currentRoute === '/profil' || currentRoute === '/profile')) ||

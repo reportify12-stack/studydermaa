@@ -12,6 +12,7 @@ import {
   Settings,
   ArrowLeft,
   ShieldCheck,
+  Video,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -37,6 +38,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { label: 'Bank Soalan', path: '/admin/questions', icon: ListOrdered, id: 'admin-nav-questions' },
     { label: 'Keputusan Kuiz', path: '/admin/results', icon: Award, id: 'admin-nav-results' },
     { label: 'Pengumuman', path: '/admin/announcements', icon: Bell, id: 'admin-nav-announcements' },
+    { label: 'Live Seminar', path: '/admin/seminars', icon: Video, id: 'admin-nav-seminars' },
     { label: 'Statistik', path: '/admin/statistics', icon: BarChart3, id: 'admin-nav-stats' },
     { label: 'Tetapan Sistem', path: '/admin/settings', icon: Settings, id: 'admin-nav-settings' },
   ];
