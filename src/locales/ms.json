@@ -1,0 +1,29 @@
+{
+  "translation": {
+    "welcome_message": "Selamat kembali ke study.dermaa! Bersedia untuk belajar hari ini?",
+    "login_button": "Log Masuk",
+    "register_button": "Daftar Pelajar",
+    "ai_tutor_name": "CikguDermarians",
+    "ai_tutor_tagline": "Tutor AI Pintar KSSM",
+    "ask_tutor": "Tanya CikguDermarians",
+    "search_placeholder": "Cari nota, soalan KSSM, subjek...",
+    "nav_home": "Utama",
+    "nav_ai_tutor": "CikguDermarians",
+    "nav_seminars": "Live Seminar",
+    "nav_study": "Belajar",
+    "nav_notes": "Nota",
+    "nav_quiz": "Kuiz",
+    "nav_progress": "Kemajuan",
+    "nav_bookmarks": "Penanda Buku",
+    "nav_settings": "Tetapan",
+    "nav_profile": "Profil Saya",
+    "nav_logout": "Log Keluar",
+    "kssm_syllabus": "Sukatan Pelajaran KSSM",
+    "theme_light": "Mod Cerah",
+    "theme_dark": "Mod Gelap",
+    "select_language": "Pilih Bahasa",
+    "dashboard_tutor_banner_title": "Ada persoalan pembelajaran KSSM?",
+    "dashboard_tutor_banner_desc": "Tanya soalan Matematik, Sains, Sejarah, atau Bahasa Melayu kepada CikguDermarians. Dapatkan penjelasan langkah demi langkah mengikut format KSSM terkini!",
+    "dashboard_tutor_banner_btn": "Buka CikguDermarians"
+  }
+}

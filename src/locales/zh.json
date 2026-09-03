@@ -1,0 +1,29 @@
+{
+  "translation": {
+    "welcome_message": "欢迎回到 study.dermaa！准备好今天的学习了吗？",
+    "login_button": "登录",
+    "register_button": "学生注册",
+    "ai_tutor_name": "CikguDermarians",
+    "ai_tutor_tagline": "智能 KSSM AI 导师",
+    "ask_tutor": "咨询 CikguDermarians",
+    "search_placeholder": "搜索笔记、KSSM考题、科目...",
+    "nav_home": "主页",
+    "nav_ai_tutor": "CikguDermarians",
+    "nav_seminars": "线上研讨会",
+    "nav_study": "学习",
+    "nav_notes": "笔记",
+    "nav_quiz": "测验",
+    "nav_progress": "学习进度",
+    "nav_bookmarks": "书签收藏",
+    "nav_settings": "设置",
+    "nav_profile": "个人资料",
+    "nav_logout": "登出",
+    "kssm_syllabus": "KSSM 课程大纲",
+    "theme_light": "浅色模式",
+    "theme_dark": "深色模式",
+    "select_language": "选择语言",
+    "dashboard_tutor_banner_title": "在 KSSM 学习中遇到疑难问题？",
+    "dashboard_tutor_banner_desc": "向 CikguDermarians 提问数学、科学、历史或马来文。根据最新 KSSM 课程标准获取详细分步解答！",
+    "dashboard_tutor_banner_btn": "启动 CikguDermarians"
+  }
+}

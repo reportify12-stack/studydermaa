@@ -1,0 +1,29 @@
+{
+  "translation": {
+    "welcome_message": "Welcome back to study.dermaa! Ready to learn today?",
+    "login_button": "Log In",
+    "register_button": "Register Student",
+    "ai_tutor_name": "CikguDermarians",
+    "ai_tutor_tagline": "Smart KSSM AI Tutor",
+    "ask_tutor": "Ask CikguDermarians",
+    "search_placeholder": "Search notes, KSSM questions, subjects...",
+    "nav_home": "Home",
+    "nav_ai_tutor": "CikguDermarians",
+    "nav_seminars": "Live Seminars",
+    "nav_study": "Study",
+    "nav_notes": "Notes",
+    "nav_quiz": "Quizzes",
+    "nav_progress": "Progress",
+    "nav_bookmarks": "Bookmarks",
+    "nav_settings": "Settings",
+    "nav_profile": "My Profile",
+    "nav_logout": "Log Out",
+    "kssm_syllabus": "KSSM Syllabus",
+    "theme_light": "Light Mode",
+    "theme_dark": "Dark Mode",
+    "select_language": "Select Language",
+    "dashboard_tutor_banner_title": "Have questions about KSSM topics?",
+    "dashboard_tutor_banner_desc": "Ask CikguDermarians about Mathematics, Science, History, or Bahasa Melayu. Get step-by-step explanations according to the latest KSSM syllabus!",
+    "dashboard_tutor_banner_btn": "Open CikguDermarians"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "translation": {
+    "welcome_message": "study.dermaa-விற்கு மீண்டும் நல்வரவு! இன்று கற்கத் தயாரா?",
+    "login_button": "உள்நுழைக",
+    "register_button": "மாணவர் பதிவு",
+    "ai_tutor_name": "CikguDermarians",
+    "ai_tutor_tagline": "நுண்ணறிவு KSSM AI ஆசிரியர்",
+    "ask_tutor": "CikguDermarians-யிடம் கேளுங்கள்",
+    "search_placeholder": "குறிப்புகள், KSSM வினாக்கள், பாடங்களைத் தேடுக...",
+    "nav_home": "முகப்பு",
+    "nav_ai_tutor": "CikguDermarians",
+    "nav_seminars": "நேரலை கருத்தரங்கு",
+    "nav_study": "கற்க",
+    "nav_notes": "குறிப்புகள்",
+    "nav_quiz": "வினாடி வினா",
+    "nav_progress": "முன்னேற்றம்",
+    "nav_bookmarks": "புத்தகக்குறிகள்",
+    "nav_settings": "அமைப்புகள்",
+    "nav_profile": "எனது சுயவிவரம்",
+    "nav_logout": "வெளியேறு",
+    "kssm_syllabus": "KSSM பாடத்திட்டம்",
+    "theme_light": "வெளிச்சப் பயன்முறை",
+    "theme_dark": "இருண்ட பயன்முறை",
+    "select_language": "மொழியைத் தேர்ந்தெடுக்கவும்",
+    "dashboard_tutor_banner_title": "KSSM பாடங்களில் சந்தேகங்கள் உள்ளதா?",
+    "dashboard_tutor_banner_desc": "கணிதம், அறிவியல், வரலாறு அல்லது மலாய் மொழி குறித்து CikguDermarians-யிடம் கேளுங்கள். சமீபத்திய KSSM பாடத்திட்டத்தின்படி படிப்படியான விளக்கங்களைப் பெறுங்கள்!",
+    "dashboard_tutor_banner_btn": "CikguDermarians-ஐத் திறக்கவும்"
+  }
+}

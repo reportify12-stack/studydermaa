@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Home,
   BookOpen,
@@ -27,19 +28,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onCloseMobile,
 }) => {
+  const { t } = useTranslation();
   const { userProfile, isAdmin } = useAuth();
 
   const studentNavItems = [
-    { label: 'Utama', path: '/dashboard', icon: Home, id: 'nav-home' },
-    { label: 'CikguDermarians', path: '/ai-tutor', icon: Sparkles, id: 'nav-ai-tutor', badge: 'KSSM' },
-    { label: 'Live Seminar', path: '/seminars', icon: Video, id: 'nav-seminars' },
-    { label: 'Belajar', path: '/belajar', icon: BookOpen, id: 'nav-belajar' },
-    { label: 'Nota', path: '/nota', icon: FileText, id: 'nav-nota' },
-    { label: 'Kuiz', path: '/kuiz', icon: HelpCircle, id: 'nav-kuiz' },
-    { label: 'Progress', path: '/progress', icon: TrendingUp, id: 'nav-progress' },
-    { label: 'Bookmark', path: '/bookmark', icon: Bookmark, id: 'nav-bookmark' },
-    { label: 'Profil', path: '/profile', icon: User, id: 'nav-profile' },
-    { label: 'Tetapan', path: '/settings', icon: Settings, id: 'nav-settings' },
+    { label: t('nav_home'), path: '/dashboard', icon: Home, id: 'nav-home' },
+    { label: t('nav_ai_tutor'), path: '/ai-tutor', icon: Sparkles, id: 'nav-ai-tutor', badge: 'KSSM' },
+    { label: t('nav_seminars'), path: '/seminars', icon: Video, id: 'nav-seminars' },
+    { label: t('nav_study'), path: '/belajar', icon: BookOpen, id: 'nav-belajar' },
+    { label: t('nav_notes'), path: '/nota', icon: FileText, id: 'nav-nota' },
+    { label: t('nav_quiz'), path: '/kuiz', icon: HelpCircle, id: 'nav-kuiz' },
+    { label: t('nav_progress'), path: '/progress', icon: TrendingUp, id: 'nav-progress' },
+    { label: t('nav_bookmarks'), path: '/bookmark', icon: Bookmark, id: 'nav-bookmark' },
+    { label: t('nav_profile'), path: '/profile', icon: User, id: 'nav-profile' },
+    { label: t('nav_settings'), path: '/settings', icon: Settings, id: 'nav-settings' },
   ];
 
   const handleItemClick = (path: string) => {

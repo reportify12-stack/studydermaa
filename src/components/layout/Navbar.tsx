@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import {
   Menu,
   X,
@@ -33,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentRoute = '/',
   navigate,
 }) => {
+  const { t } = useTranslation();
   const { userProfile, role, isAdmin, logout } = useAuth();
   const { themeConfig, isDark, toggleColorMode } = useTheme();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -92,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <span className="flex items-center gap-2">
               <Search className="w-4 h-4 text-stone-400" />
-              <span>Cari nota, soalan KSSM, subjek...</span>
+              <span>{t('search_placeholder')}</span>
             </span>
             <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded-md border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-400">
               Ctrl+K
@@ -112,14 +115,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Search className="w-5 h-5" />
           </button>
 
+          {/* Language Switcher Dropdown */}
+          <LanguageSwitcher variant="dropdown" />
+
           {/* Theme Mode Toggle Button (Sun / Moon) */}
           <button
             id="navbar-theme-toggle-btn"
             type="button"
             onClick={toggleColorMode}
             className="p-2 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white/80 dark:bg-stone-800/80 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-700/60 transition-all shadow-2xs focus:outline-hidden"
-            title={isDark ? 'Tukar ke Mod Cerah (Light)' : 'Tukar ke Mod Gelap (Dark)'}
-            aria-label={isDark ? 'Mod Cerah' : 'Mod Gelap'}
+            title={isDark ? t('theme_light') : t('theme_dark')}
+            aria-label={isDark ? t('theme_light') : t('theme_dark')}
           >
             {isDark ? (
               <Sun className="w-4 h-4 text-amber-500 animate-fade-in" />
@@ -220,7 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Log Keluar</span>
+                      <span>{t('nav_logout')}</span>
                     </button>
                   </div>
                 )}
@@ -233,14 +239,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => navigate('/login')}
                 className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
               >
-                Log Masuk
+                {t('login_button')}
               </button>
               <button
                 id="navbar-register-btn"
                 onClick={() => navigate('/register')}
                 className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold btn-theme-primary shadow-xs"
               >
-                Daftar Pelajar
+                {t('register_button')}
               </button>
             </div>
           )}

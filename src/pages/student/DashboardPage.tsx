@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { getPublishedNotes, getPublishedSubjects, getPublishedAnnouncements, getAllUserNoteProgress } from '../../services/contentService';
 import { getUserQuizAttempts } from '../../services/quizService';
@@ -32,6 +33,7 @@ interface DashboardPageProps {
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
+  const { t } = useTranslation();
   const { userProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -173,14 +175,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 font-display">
-                Ada persoalan pembelajaran KSSM?
+                {t('dashboard_tutor_banner_title')}
               </h2>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
                 Pintar & Pantas
               </span>
             </div>
             <p className="text-xs text-stone-600 dark:text-stone-300 max-w-xl leading-relaxed">
-              Tanya soalan Matematik, Sains, Sejarah, atau Bahasa Melayu kepada CikguDermarians. Dapatkan penjelasan langkah demi langkah mengikut format KSSM terkini!
+              {t('dashboard_tutor_banner_desc')}
             </p>
           </div>
         </div>
@@ -191,7 +193,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
           className="px-5 py-2.5 rounded-2xl bg-theme-primary text-white text-xs font-bold hover:brightness-105 active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2 shrink-0"
         >
           <Sparkles className="w-4 h-4" />
-          <span>Buka CikguDermarians</span>
+          <span>{t('dashboard_tutor_banner_btn')}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
