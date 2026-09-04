@@ -48,6 +48,18 @@ export const formatFirebaseError = (errorCode: string): string => {
       return 'Akses disekat sementara akibat terlalu banyak percubaan gagal. Sila tunggu sebentar.';
     case 'auth/network-request-failed':
       return 'Ralat sambungan internet. Sila semak talian anda.';
+    case 'auth/popup-closed-by-user':
+      return 'Tetingkap log masuk telah ditutup sebelum selesai. Sila cuba lagi.';
+    case 'auth/cancelled-popup-request':
+      return 'Permintaan log masuk dibatalkan.';
+    case 'auth/popup-blocked':
+      return 'Tetingkap timbul (pop-up) telah disekat oleh pelayar anda. Sila benarkan pop-up untuk log masuk.';
+    case 'auth/account-exists-with-different-credential':
+      return 'Akaun dengan emel ini telah wujud menggunakan kaedah log masuk berbeza (cth: Emel & Kata Laluan). Sila log masuk dengan kaedah asal anda.';
+    case 'auth/credential-already-in-use':
+      return 'Kelayakan ini telah dipautkan ke akaun lain.';
+    case 'auth/operation-not-allowed':
+      return 'Kaedah log masuk ini belum diaktifkan dalam konsol Firebase. Sila hubungi pentadbir.';
     case 'permission-denied':
     case 'firestore/permission-denied':
       return 'Akses ditolak. Anda tidak mempunyai kebenaran untuk melakukan operasi ini.';

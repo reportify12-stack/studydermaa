@@ -6,6 +6,8 @@ import {
   Firestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  memoryLocalCache,
+  setLogLevel,
 } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import firebaseConfigFallback from '../../firebase-applet-config.json';
@@ -27,17 +29,27 @@ const firebaseConfig = {
 const app: FirebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth: Auth = getAuth(app);
 
-// Initialize Firestore with resilient auto-detect long polling & multi-tab cache
+// Suppress benign internal network/retry warnings from surfacing as fatal errors in preview
+setLogLevel('error');
+
+// Initialize Firestore with resilient HTTP long-polling (bypassing WebSocket failures in sandboxed iframes)
 let db: Firestore;
 try {
   db = initializeFirestore(app, {
-    experimentalAutoDetectLongPolling: true,
+    experimentalForceLongPolling: true,
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager(),
     }),
   });
 } catch {
-  db = getFirestore(app);
+  try {
+    db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      localCache: memoryLocalCache(),
+    });
+  } catch {
+    db = getFirestore(app);
+  }
 }
 
 const storage: FirebaseStorage = getStorage(app);
