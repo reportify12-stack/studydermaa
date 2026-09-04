@@ -244,17 +244,16 @@ const AppContent: React.FC = () => {
             currentRoute={currentPath}
             navigate={navigate}
           />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
-            <div className="flex gap-8">
-              <div className="w-64 shrink-0">
-                <Sidebar
-                  currentRoute="/belajar"
-                  navigate={navigate}
-                  isMobileOpen={mobileMenuOpen}
-                  onCloseMobile={() => setMobileMenuOpen(false)}
-                />
-              </div>
-              <main className="flex-1 min-w-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 w-full flex-1">
+            <div className="flex gap-0 md:gap-8">
+              {/* Sidebar: hidden on mobile, w-64 on desktop, drawer portaled */}
+              <Sidebar
+                currentRoute="/belajar"
+                navigate={navigate}
+                isMobileOpen={mobileMenuOpen}
+                onCloseMobile={() => setMobileMenuOpen(false)}
+              />
+              <main className="w-full flex-1 min-w-0">
                 <NotesListPage subjectIdProp={subjectId} navigate={navigate} />
               </main>
             </div>
@@ -296,20 +295,18 @@ const AppContent: React.FC = () => {
           currentRoute={currentPath}
           navigate={navigate}
         />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
-          <div className="flex gap-8">
-            {/* Sidebar for Desktop and Mobile Drawer */}
-            <div className="w-64 shrink-0">
-              <Sidebar
-                currentRoute={currentPath}
-                navigate={navigate}
-                isMobileOpen={mobileMenuOpen}
-                onCloseMobile={() => setMobileMenuOpen(false)}
-              />
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 w-full flex-1">
+          <div className="flex gap-0 md:gap-8">
+            {/* Sidebar: hidden on mobile, w-64 on desktop, drawer portaled to body */}
+            <Sidebar
+              currentRoute={currentPath}
+              navigate={navigate}
+              isMobileOpen={mobileMenuOpen}
+              onCloseMobile={() => setMobileMenuOpen(false)}
+            />
 
-            {/* Main Content Area */}
-            <main className="flex-1 min-w-0">
+            {/* Main Content Area: full width on mobile, fills remaining space on desktop */}
+            <main className="w-full flex-1 min-w-0">
               {accessDeniedMessage && (
                 <div
                   id="access-denied-alert"

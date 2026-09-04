@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Home,
@@ -12,6 +13,7 @@ import {
   Shield,
   Sparkles,
   Video,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -112,56 +114,72 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </div>
   );
 
+  const mobileDrawer = isMobileOpen && typeof document !== 'undefined' ? (
+    createPortal(
+      <div
+        id="mobile-sidebar-backdrop"
+        className="fixed inset-0 z-50 md:hidden bg-stone-900/60 backdrop-blur-xs flex animate-fade-in"
+        onClick={() => {
+          if (typeof onCloseMobile === 'function') {
+            onCloseMobile();
+          }
+        }}
+      >
+        <div
+          id="mobile-sidebar-drawer"
+          className="w-72 max-w-[80vw] bg-white dark:bg-stone-900 h-full shadow-2xl overflow-y-auto border-r border-stone-200 dark:border-stone-800 flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between shrink-0">
+            <button
+              onClick={() => handleItemClick('/dashboard')}
+              className="flex items-center text-left focus:outline-hidden"
+              aria-label="study.dermaa"
+            >
+              <img
+                src="/logo-light.png"
+                alt="Logo"
+                className="h-9 w-auto block dark:hidden object-contain"
+                referrerPolicy="no-referrer"
+              />
+              <img
+                src="/logo-dark.png"
+                alt="Logo"
+                className="h-9 w-auto hidden dark:block object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </button>
+            <button
+              id="mobile-sidebar-close-btn"
+              type="button"
+              onClick={onCloseMobile}
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+              aria-label="Tutup Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {navContent}
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+  ) : null;
+
   return (
     <>
       {/* Desktop Persistent Sidebar */}
       <aside
         id="desktop-sidebar"
-        className="hidden md:block w-64 shrink-0 border-r border-stone-200/80 dark:border-stone-800 bg-white/60 dark:bg-stone-900/60 backdrop-blur-md min-h-[calc(100vh-4rem)]"
+        className="hidden md:block w-64 shrink-0 border-r border-stone-200/80 dark:border-stone-800 bg-white/60 dark:bg-stone-900/60 backdrop-blur-md min-h-[calc(100vh-4rem)] rounded-3xl"
       >
         {navContent}
       </aside>
 
-      {/* Mobile Drawer */}
-      {isMobileOpen && (
-        <div
-          id="mobile-sidebar-backdrop"
-          className="fixed inset-0 z-40 md:hidden bg-stone-900/60 backdrop-blur-xs flex animate-fade-in"
-          onClick={() => {
-            if (typeof onCloseMobile === 'function') {
-              onCloseMobile();
-            }
-          }}
-        >
-          <div
-            id="mobile-sidebar-drawer"
-            className="w-72 max-w-[80vw] bg-white dark:bg-stone-900 h-full shadow-2xl overflow-y-auto border-r border-stone-200 dark:border-stone-800"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
-              <button
-                onClick={() => handleItemClick('/dashboard')}
-                className="flex items-center text-left focus:outline-hidden"
-                aria-label="study.dermaa"
-              >
-                <img
-                  src="/logo-light.png"
-                  alt="Logo"
-                  className="h-10 w-auto block dark:hidden object-contain"
-                  referrerPolicy="no-referrer"
-                />
-                <img
-                  src="/logo-dark.png"
-                  alt="Logo"
-                  className="h-10 w-auto hidden dark:block object-contain"
-                  referrerPolicy="no-referrer"
-                />
-              </button>
-            </div>
-            {navContent}
-          </div>
-        </div>
-      )}
+      {/* Mobile Drawer Portaled to body */}
+      {mobileDrawer}
     </>
   );
 };
