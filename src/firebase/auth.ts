@@ -177,6 +177,11 @@ export const registerStudent = async (data: RegisterStudentData): Promise<UserPr
 };
 
 /**
+ * Alias for registerStudent to register any user with selected role (student or teacher)
+ */
+export const registerUser = registerStudent;
+
+/**
  * Login with username OR email and password
  */
 export const loginUser = async (identifier: string, password: string): Promise<UserProfile> => {

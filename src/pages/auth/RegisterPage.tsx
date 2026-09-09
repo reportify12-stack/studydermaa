@@ -83,10 +83,12 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
             d
           </div>
           <h1 className="text-2xl font-black text-stone-900 dark:text-stone-100 font-display tracking-tight">
-            Pendaftaran Pelajar
+            {selectedRole === 'teacher' ? 'Pendaftaran Guru' : 'Pendaftaran Pelajar'}
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
-            Cipta akaun percuma untuk memulakan pembelajaran KSSM
+            {selectedRole === 'teacher'
+              ? 'Daftar sebagai tenaga pengajar untuk mengurus bilik darjah SMK Derma dan tugasan KSSM.'
+              : 'Cipta akaun percuma untuk memulakan pembelajaran KSSM study.dermaa.'}
           </p>
         </div>
 
@@ -103,38 +105,59 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
 
         {/* Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Account Role Selector */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1.5">
-              Jenis Akaun
-            </label>
-            <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700">
+          {/* Account Role Selector (Toggle & Dropdown) */}
+          <div className="p-3.5 rounded-2xl bg-stone-50/80 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="register-role-select" className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                Pilih Peranan / Select Role <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[11px] font-semibold text-stone-400">
+                {selectedRole === 'teacher' ? 'Akaun Pendidik (Teacher)' : 'Akaun Murid (Student)'}
+              </span>
+            </div>
+
+            {/* Visual Button Toggle */}
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-stone-200/60 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
               <button
                 id="select-role-student-btn"
                 type="button"
                 onClick={() => setSelectedRole('student')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   selectedRole === 'student'
                     ? 'bg-white dark:bg-stone-900 text-theme-primary shadow-xs'
-                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Pelajar</span>
+                <span>Student / Pelajar</span>
               </button>
               <button
                 id="select-role-teacher-btn"
                 type="button"
                 onClick={() => setSelectedRole('teacher')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   selectedRole === 'teacher'
                     ? 'bg-white dark:bg-stone-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
                 <School className="w-3.5 h-3.5" />
-                <span>Guru (SMK Derma / Sekolah)</span>
+                <span>Teacher / Guru</span>
               </button>
+            </div>
+
+            {/* Explicit Dropdown for accessible form completion */}
+            <div className="pt-1">
+              <select
+                id="register-role-select"
+                aria-label="Select Role"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value as 'student' | 'teacher')}
+                className="w-full px-3 py-2 text-xs font-medium rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-theme-primary cursor-pointer"
+              >
+                <option value="student">Student (Pelajar KSSM)</option>
+                <option value="teacher">Teacher (Guru SMK Derma / Pendidik)</option>
+              </select>
             </div>
           </div>
 

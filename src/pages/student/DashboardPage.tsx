@@ -26,6 +26,7 @@ import {
   ExternalLink,
   Radio,
   Clock,
+  ShieldAlert,
 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -36,6 +37,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
   const { t } = useTranslation();
   const { userProfile } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [accessDeniedNotice, setAccessDeniedNotice] = useState<string | null>(() => {
+    try {
+      const msg = sessionStorage.getItem('access_denied_alert');
+      if (msg) {
+        sessionStorage.removeItem('access_denied_alert');
+        return msg;
+      }
+    } catch (e) {}
+    return null;
+  });
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -77,6 +88,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
 
   return (
     <div id="student-dashboard" className="space-y-8 pb-12 animate-fade-in">
+      {/* Access Denied Flash Alert */}
+      {accessDeniedNotice && (
+        <div
+          id="student-dashboard-access-denied"
+          className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200 flex items-center justify-between shadow-xs animate-in fade-in"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                Akses Ditolak / Access Denied
+              </p>
+              <p className="text-xs sm:text-sm font-semibold text-rose-800 dark:text-rose-200">
+                {accessDeniedNotice}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setAccessDeniedNotice(null)}
+            className="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-200 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
       {/* Top Greeting & Motivational Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white/70 dark:bg-stone-900/60 backdrop-blur-md shadow-xs">
         <div>

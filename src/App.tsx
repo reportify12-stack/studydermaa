@@ -45,6 +45,7 @@ import { AdminSeminarsPage } from './pages/admin/AdminSeminarsPage';
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
 import { TeacherLayout } from './components/layout/TeacherLayout';
 import { TeacherProtectedRoute } from './components/auth/TeacherProtectedRoute';
+import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
 
 import { Loader2 } from 'lucide-react';
 
@@ -153,14 +154,21 @@ const AppContent: React.FC = () => {
       );
     }
 
-    // Teacher Routes (Teacher Portal - completely separate from Admin and Student views)
-    if (currentPath.startsWith('/teacher')) {
+    // Teacher Routes (Teacher Portal - strictly guarded by RoleProtectedRoute)
+    // If a user with role: 'student' attempts to access /teacher-dashboard or any /teacher routes,
+    // they are immediately redirected to /dashboard with an 'Access Denied' alert.
+    if (currentPath === '/teacher-dashboard' || currentPath.startsWith('/teacher')) {
       return (
-        <TeacherProtectedRoute navigate={navigate}>
+        <RoleProtectedRoute
+          allowedRoles={['teacher', 'admin']}
+          navigate={navigate}
+          redirectTo="/dashboard"
+          onAccessDenied={(msg) => setAccessDeniedMessage(msg)}
+        >
           <TeacherLayout currentRoute={currentPath} navigate={navigate}>
             <TeacherDashboardPage navigate={navigate} />
           </TeacherLayout>
-        </TeacherProtectedRoute>
+        </RoleProtectedRoute>
       );
     }
 
