@@ -41,6 +41,11 @@ import { AdminStatisticsPage } from './pages/admin/AdminStatisticsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminSeminarsPage } from './pages/admin/AdminSeminarsPage';
 
+// Pages - Teacher Portal
+import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
+import { TeacherLayout } from './components/layout/TeacherLayout';
+import { TeacherProtectedRoute } from './components/auth/TeacherProtectedRoute';
+
 import { Loader2 } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -85,7 +90,7 @@ const AppContent: React.FC = () => {
     // Auth routes
     if (currentPath === '/login') {
       if (user && userProfile) {
-        navigate(userProfile.role === 'admin' ? '/admin' : '/dashboard');
+        navigate(userProfile.role === 'admin' ? '/admin' : userProfile.role === 'teacher' ? '/teacher' : '/dashboard');
         return null;
       }
       return <LoginPage navigate={navigate} />;
@@ -93,7 +98,7 @@ const AppContent: React.FC = () => {
 
     if (currentPath === '/register') {
       if (user && userProfile) {
-        navigate(userProfile.role === 'admin' ? '/admin' : '/dashboard');
+        navigate(userProfile.role === 'admin' ? '/admin' : userProfile.role === 'teacher' ? '/teacher' : '/dashboard');
         return null;
       }
       return <RegisterPage navigate={navigate} />;
@@ -148,10 +153,27 @@ const AppContent: React.FC = () => {
       );
     }
 
+    // Teacher Routes (Teacher Portal - completely separate from Admin and Student views)
+    if (currentPath.startsWith('/teacher')) {
+      return (
+        <TeacherProtectedRoute navigate={navigate}>
+          <TeacherLayout currentRoute={currentPath} navigate={navigate}>
+            <TeacherDashboardPage navigate={navigate} />
+          </TeacherLayout>
+        </TeacherProtectedRoute>
+      );
+    }
+
     // Public Landing (if not logged in)
     if (currentPath === '/' || currentPath === '/landing') {
       if (user && userProfile) {
-        navigate(userProfile.role === 'admin' ? '/admin' : '/dashboard');
+        if (userProfile.role === 'admin') {
+          navigate('/admin');
+        } else if (userProfile.role === 'teacher') {
+          navigate('/teacher');
+        } else {
+          navigate('/dashboard');
+        }
         return null;
       }
       return (

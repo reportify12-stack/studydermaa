@@ -32,6 +32,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate }) => {
       const profile = await loginUser(cleanIdentifier, password);
       if (profile.role === 'admin') {
         navigate('/admin');
+      } else if (profile.role === 'teacher') {
+        navigate('/teacher');
       } else {
         navigate('/dashboard');
       }

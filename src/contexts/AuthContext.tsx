@@ -11,12 +11,14 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   role: UserRole | null;
   isAdmin: boolean;
+  isTeacher: boolean;
   isStudent: boolean;
   hasAdminClaim: boolean;
   loading: boolean;
   isLoading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
+  setUserRole: (newRole: UserRole) => Promise<void>;
   forceRefreshToken: () => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -140,8 +142,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     (userProfile?.email ? ADMIN_EMAILS.includes(userProfile.email.toLowerCase()) : false);
 
   const isAdmin = userProfile?.role === 'admin' || hasAdminClaim || isEmailAdmin;
+  const isTeacher = userProfile?.role === 'teacher' || isAdmin;
   const role: UserRole | null = isAdmin ? 'admin' : (userProfile?.role || (currentUser ? 'student' : null));
-  const isStudent = !isAdmin && (userProfile?.role === 'student' || (!userProfile && !!currentUser));
+  const isStudent = !isAdmin && !isTeacher && (userProfile?.role === 'student' || (!userProfile && !!currentUser));
+
+  const setUserRole = async (newRole: UserRole) => {
+    if (!currentUser) return;
+    const userRef = doc(db, 'users', currentUser.uid);
+    await setDoc(userRef, { role: newRole, updatedAt: new Date().toISOString() }, { merge: true });
+    setUserProfile((prev) => (prev ? { ...prev, role: newRole } : null));
+  };
 
   // If user matches admin criteria but Firestore doc role is not 'admin', sync it automatically
   useEffect(() => {
@@ -161,12 +171,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userProfile,
         role,
         isAdmin,
+        isTeacher,
         isStudent,
         hasAdminClaim,
         loading: isLoading,
         isLoading,
         error,
         refreshProfile,
+        setUserRole,
         forceRefreshToken,
         logout: handleLogout,
       }}

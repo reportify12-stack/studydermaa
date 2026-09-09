@@ -16,6 +16,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [tingkatan, setTingkatan] = useState<TingkatanType>('Tingkatan 1');
   const [school, setSchool] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'student' | 'teacher'>('student');
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -55,10 +56,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
         password,
         tingkatan,
         school: school.trim() || undefined,
+        role: selectedRole,
       });
 
-      // Successful registration -> Navigate to dashboard
-      navigate('/dashboard');
+      // Successful registration -> Navigate to teacher portal or student dashboard
+      if (selectedRole === 'teacher') {
+        navigate('/teacher');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       console.error('Registration error:', err);
       const msg = err.code ? formatFirebaseError(err.code) : err.message || 'Pendaftaran gagal.';
@@ -97,6 +103,41 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
 
         {/* Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Account Role Selector */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1.5">
+              Jenis Akaun
+            </label>
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700">
+              <button
+                id="select-role-student-btn"
+                type="button"
+                onClick={() => setSelectedRole('student')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  selectedRole === 'student'
+                    ? 'bg-white dark:bg-stone-900 text-theme-primary shadow-xs'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Pelajar</span>
+              </button>
+              <button
+                id="select-role-teacher-btn"
+                type="button"
+                onClick={() => setSelectedRole('teacher')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  selectedRole === 'teacher'
+                    ? 'bg-white dark:bg-stone-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                }`}
+              >
+                <School className="w-3.5 h-3.5" />
+                <span>Guru (SMK Derma / Sekolah)</span>
+              </button>
+            </div>
+          </div>
+
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">

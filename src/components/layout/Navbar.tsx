@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Sun,
   Moon,
+  GraduationCap,
 } from 'lucide-react';
 import { StreakBadge } from '../common/StreakBadge';
 import { XpBadge } from '../common/XpBadge';
@@ -36,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   navigate,
 }) => {
   const { t } = useTranslation();
-  const { userProfile, role, isAdmin, logout } = useAuth();
+  const { userProfile, role, isAdmin, isTeacher, logout } = useAuth();
   const { themeConfig, isDark, toggleColorMode } = useTheme();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -146,6 +147,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <XpBadge xp={userProfile.xp || 0} level={userProfile.level || 1} compact />
               </div>
 
+              {/* Teacher Portal shortcut if user is teacher or admin */}
+              {(isTeacher || isAdmin) && (
+                <button
+                  id="navbar-teacher-shortcut-btn"
+                  type="button"
+                  onClick={() => navigate(currentRoute.startsWith('/teacher') ? '/dashboard' : '/teacher')}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors shadow-2xs cursor-pointer"
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>{currentRoute.startsWith('/teacher') ? 'Portal Pelajar' : 'Portal Guru'}</span>
+                </button>
+              )}
+
               {/* Admin Portal shortcut if user is admin */}
               {isAdmin && (
                 <button
@@ -205,6 +219,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <Palette className="w-4 h-4 text-stone-400" />
                       <span>Tetapan & Tema</span>
+                    </button>
+
+                    <button
+                      id="dropdown-teacher-link"
+                      onClick={() => navigate('/teacher')}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                    >
+                      <GraduationCap className="w-4 h-4 text-emerald-500" />
+                      <span>Portal Guru SMK Derma</span>
                     </button>
 
                     {isAdmin && (

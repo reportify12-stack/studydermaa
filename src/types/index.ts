@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin';
+export type UserRole = 'student' | 'teacher' | 'admin';
 
 export type TingkatanType = 
   | 'Tingkatan 1'
@@ -277,3 +277,65 @@ export interface AiTutorSubjectOption {
   iconName: string;
   promptSuggestions: string[];
 }
+
+// ==========================================
+// TEACHER PORTAL & GOOGLE CLASSROOM TYPES
+// ==========================================
+
+export interface ClassRoom {
+  id: string;
+  name: string;
+  subject: string;
+  tingkatan: TingkatanType;
+  teacherId: string;
+  teacherName: string;
+  teacherEmail?: string;
+  schoolName: string;
+  joinCode: string;
+  description?: string;
+  section?: string;
+  studentIds: string[];
+  studentCount: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface Assignment {
+  id: string;
+  classId: string;
+  className: string;
+  teacherId: string;
+  title: string;
+  description: string;
+  deadline: string;
+  points?: number;
+  attachments?: { title: string; url: string }[];
+  submissionsCount: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  assignmentId: string;
+  classId: string;
+  studentId: string;
+  studentName: string;
+  studentEmail?: string;
+  submittedAt: string;
+  content: string;
+  status: 'submitted' | 'graded' | 'late';
+  grade?: number;
+  feedback?: string;
+}
+
+export interface ClassStudent {
+  uid: string;
+  fullName: string;
+  username: string;
+  email: string;
+  school?: string;
+  tingkatan?: string;
+  joinedAt?: string;
+}
+

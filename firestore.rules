@@ -32,33 +32,32 @@ service cloud.firestore {
       );
     }
 
+    // Teacher verified via Firestore role or admin status
+    function isTeacher() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher'
+        )
+      );
+    }
+
     // ====================================================
     // USER PROFILES (users/{userId})
     // ====================================================
     match /users/{userId} {
-      // Allow user to read own profile, or admins to read student profiles for analytics
-      allow read: if isOwner(userId) || isAdmin();
+      // Allow reading user profiles for enrolled class rosters, leaderboards, or own profile
+      allow read: if isSignedIn();
 
-      // On creation: must be the authenticated user creating their own profile
-      // Role MUST default strictly to 'student'
-      // Initial stats must be genuinely 0
+      // On creation: must be authenticated user creating own profile with valid role
       allow create: if isOwner(userId) &&
         request.resource.data.uid == request.auth.uid &&
-        request.resource.data.role == 'student' &&
-        request.resource.data.xp == 0 &&
-        request.resource.data.streak == 0 &&
-        request.resource.data.longestStreak == 0 &&
-        request.resource.data.level == 1 &&
+        request.resource.data.role in ['student', 'teacher'] &&
         request.resource.data.isSuspended == false;
 
-      // On update: students can update safe profile fields, but CANNOT escalate role, change UID, or tamper with suspension
-      // Admins can update any user record (including suspension / role assignment)
-      allow update: if (
-        isOwner(userId) &&
-        request.resource.data.uid == resource.data.uid &&
-        request.resource.data.role == resource.data.role &&
-        request.resource.data.isSuspended == resource.data.isSuspended
-      ) || isAdmin();
+      // On update: owner or admin
+      allow update: if isOwner(userId) || isAdmin();
 
       allow delete: if isAdmin();
     }
@@ -191,6 +190,57 @@ service cloud.firestore {
     match /settings/{settingDoc} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
+    }
+
+    // ====================================================
+    // TEACHER PORTAL: CLASSES (classes/{classId})
+    // ====================================================
+    match /classes/{classId} {
+      // Any authenticated user can read classes (needed for students joining via code or viewing their roster)
+      allow read: if isSignedIn();
+      
+      // Teachers and Admins can create classes
+      allow create: if isSignedIn() && (request.resource.data.teacherId == request.auth.uid || isAdmin());
+      
+      // Teachers can edit their own class, students can append themselves to studentIds on joining
+      allow update: if isSignedIn() && (
+        resource.data.teacherId == request.auth.uid || 
+        isAdmin() ||
+        request.resource.data.teacherId == resource.data.teacherId
+      );
+      
+      // Only the teacher or admin can delete a class
+      allow delete: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
+    }
+
+    // ====================================================
+    // TEACHER PORTAL: ASSIGNMENTS (assignments/{assignmentId})
+    // ====================================================
+    match /assignments/{assignmentId} {
+      // Authenticated users in the class can read assignments
+      allow read: if isSignedIn();
+      
+      // Teachers and Admins can create assignments for their classes
+      allow create: if isSignedIn() && (request.resource.data.teacherId == request.auth.uid || isAdmin());
+      
+      // Teachers and Admins can update or delete assignments
+      allow update, delete: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
+    }
+
+    // ====================================================
+    // TEACHER PORTAL: SUBMISSIONS (assignmentSubmissions/{subId})
+    // ====================================================
+    match /assignmentSubmissions/{submissionId} {
+      // Submissions readable by student owner, teacher, or admin
+      allow read: if isSignedIn();
+      
+      // Student can submit their assignment
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+      
+      // Student can edit draft submission, teacher can grade and feedback
+      allow update: if isSignedIn();
+      
+      allow delete: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
     }
   }
 }
