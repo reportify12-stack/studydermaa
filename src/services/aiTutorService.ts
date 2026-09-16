@@ -70,13 +70,57 @@ export function clearStoredChatHistory(): void {
 }
 
 /**
+ * Formats and sanitizes chat history into strictly alternating 'user' and 'model' turns for Google Gemini API:
+ * 1. Filters out transient errors and empty messages.
+ * 2. Prunes any leading 'model' turns (such as the default welcome greeting) so the conversation strictly starts with 'user'.
+ * 3. Enforces strictly alternating roles (user -> model -> user -> model), merging consecutive messages with identical roles.
+ * 4. Ensures the latest user prompt is cleanly present at the tail, preventing prompt echoing and context desynchronization.
+ */
+export function formatConversationHistoryForGemini(messages: ChatMessage[]): GeminiContent[] {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return [];
+  }
+
+  // 1. Filter and normalize
+  const cleaned = messages
+    .filter((m) => !m.isError && typeof m.content === 'string' && m.content.trim().length > 0)
+    .map((m) => ({
+      role: (m.role === 'student' ? 'user' : 'model') as 'user' | 'model',
+      text: m.content.trim(),
+    }));
+
+  // 2. Drop leading 'model' turns (Gemini API requires first turn to be 'user')
+  let firstUserIdx = 0;
+  while (firstUserIdx < cleaned.length && cleaned[firstUserIdx].role !== 'user') {
+    firstUserIdx++;
+  }
+  const userStarted = cleaned.slice(firstUserIdx);
+  if (userStarted.length === 0) {
+    return [];
+  }
+
+  // 3. Strictly alternating roles
+  const alternating: GeminiContent[] = [];
+  for (const item of userStarted) {
+    const prev = alternating[alternating.length - 1];
+    if (prev && prev.role === item.role) {
+      prev.parts[0].text += `\n\n${item.text}`;
+    } else {
+      alternating.push({
+        role: item.role,
+        parts: [{ text: item.text }],
+      });
+    }
+  }
+
+  return alternating;
+}
+
+/**
  * Converts internal ChatMessage objects to the Google Gemini API `contents` format
  */
 export function formatMessagesForGemini(messages: ChatMessage[]): GeminiContent[] {
-  return messages.map((msg) => ({
-    role: msg.role === 'student' ? 'user' : 'model',
-    parts: [{ text: msg.content }],
-  }));
+  return formatConversationHistoryForGemini(messages);
 }
 
 /**

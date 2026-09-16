@@ -13,6 +13,7 @@ import {
   Shield,
   Sparkles,
   Video,
+  Globe,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -35,6 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const studentNavItems = [
     { label: t('nav_home'), path: '/dashboard', icon: Home, id: 'nav-home' },
+    { label: 'Language Hub', path: '/language-hub', icon: Globe, id: 'nav-language-hub', badge: 'AI' },
     { label: t('nav_ai_tutor'), path: '/ai-tutor', icon: Sparkles, id: 'nav-ai-tutor', badge: 'KSSM' },
     { label: t('nav_seminars'), path: '/seminars', icon: Video, id: 'nav-seminars' },
     { label: t('nav_study'), path: '/belajar', icon: BookOpen, id: 'nav-belajar' },
@@ -63,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const Icon = item.icon;
           const isActive =
             currentRoute === item.path ||
+            (item.path === '/language-hub' && (currentRoute === '/language-hub' || currentRoute === '/languages' || currentRoute === '/bahasa')) ||
             (item.path === '/ai-tutor' && (currentRoute === '/ai-tutor' || currentRoute === '/tutor')) ||
             (item.path === '/seminars' && (currentRoute === '/seminars' || currentRoute === '/seminar' || currentRoute === '/live-seminar')) ||
             (item.path === '/progress' && (currentRoute === '/kemajuan' || currentRoute === '/progress')) ||
@@ -85,7 +88,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-theme-primary' : 'text-stone-400'}`} />
-              <span>{item.label}</span>
+              <span className="flex-1 truncate">{item.label}</span>
+              {item.badge && (
+                <span className="px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-theme-surface text-theme-primary border border-theme-primary/30">
+                  {item.badge}
+                </span>
+              )}
             </button>
           );
         })}

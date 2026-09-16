@@ -27,6 +27,7 @@ import {
   Radio,
   Clock,
   ShieldAlert,
+  Globe,
 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -233,6 +234,41 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
         >
           <Sparkles className="w-4 h-4" />
           <span>{t('dashboard_tutor_banner_btn')}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* AI Multilingual Language Hub Banner */}
+      <div
+        id="dashboard-language-hub-banner"
+        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-rose-950/20 border border-amber-200/80 dark:border-amber-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
+      >
+        <div className="flex items-start gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Globe className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 font-display">
+                Pusat Bahasa AI (Language Hub)
+              </h2>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
+                Baharu • Gemini AI
+              </span>
+            </div>
+            <p className="text-xs text-stone-600 dark:text-stone-300 max-w-xl leading-relaxed">
+              Kuasai bahasa antarabangsa: <strong className="font-semibold text-stone-800 dark:text-stone-100">Sawadee Thai</strong>, <strong className="font-semibold text-stone-800 dark:text-stone-100">Annyeonghaseyo Korea</strong>, dan <strong className="font-semibold text-stone-800 dark:text-stone-100">Konnichiwa Japan</strong> dengan modul pembelajaran & kuiz janaan Gemini secara masa nyata.
+            </p>
+          </div>
+        </div>
+
+        <button
+          id="dashboard-launch-language-hub-btn"
+          onClick={() => navigate('/language-hub')}
+          className="px-5 py-2.5 rounded-2xl bg-amber-600 dark:bg-amber-500 hover:bg-amber-700 dark:hover:bg-amber-600 text-white text-xs font-bold hover:brightness-105 active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2 shrink-0"
+        >
+          <Globe className="w-4 h-4" />
+          <span>Buka Language Hub</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

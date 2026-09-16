@@ -26,6 +26,7 @@ import { ProfilePage } from './pages/student/ProfilePage';
 import { SettingsPage } from './pages/student/SettingsPage';
 import { SeminarsPage } from './pages/student/SeminarsPage';
 import { AiTutorPage } from './pages/student/AiTutorPage';
+import { LanguageHubPage } from './pages/student/LanguageHubPage';
 import { AiTutorWidget } from './components/tutor/AiTutorWidget';
 
 // Pages - Admin
@@ -312,6 +313,8 @@ const AppContent: React.FC = () => {
       studentView = <SeminarsPage navigate={navigate} />;
     } else if (currentPath === '/ai-tutor' || currentPath === '/tutor') {
       studentView = <AiTutorPage navigate={navigate} />;
+    } else if (currentPath === '/language-hub' || currentPath === '/languages' || currentPath === '/bahasa') {
+      studentView = <LanguageHubPage navigate={navigate} />;
     } else if (currentPath === '/dashboard' || currentPath === '/utama') {
       studentView = <DashboardPage navigate={navigate} />;
     }

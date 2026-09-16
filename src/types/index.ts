@@ -339,3 +339,5 @@ export interface ClassStudent {
   joinedAt?: string;
 }
 
+export * from './languageHub';
+

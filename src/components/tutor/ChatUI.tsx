@@ -86,24 +86,34 @@ export const ChatUI: React.FC<ChatUIProps> = ({
   const currentSubjectObj =
     KSSM_TUTOR_SUBJECTS.find((s) => s.id === selectedSubject) || KSSM_TUTOR_SUBJECTS[0];
 
+  /**
+   * Robust sendMessage handler adhering to Gemini SDK best practices:
+   * 1. Extracts & trims latest user input from parameter or textarea.
+   * 2. Clears text field and appends user message to React state atomically.
+   * 3. Passes the full conversation history (formatted with alternating user/model turns starting with 'user') to the Gemini API.
+   * 4. Appends the fresh response and prevents prompt echoing or repetitive loops.
+   */
   const handleSendMessage = async (textToSend?: string) => {
-    const query = (textToSend || input).trim();
+    // 1. Correctly take the latest user input
+    const query = (textToSend !== undefined ? textToSend : input).trim();
     if (!query || isLoading) return;
 
     const userMessage: ChatMessage = {
-      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       role: 'student',
       content: query,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       subject: selectedSubject !== 'all' ? currentSubjectObj.name : undefined,
     };
 
+    // 2. Append to React messages state immediately and construct updatedHistory
     const updatedHistory = [...messages, userMessage];
-    setMessages(updatedHistory);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
+      // 3. Pass full conversation history to Gemini API (alternating roles, starting with user)
       const response = await sendGeminiChatRequest(
         updatedHistory,
         userProfile?.fullName || userProfile?.username,
@@ -111,8 +121,9 @@ export const ChatUI: React.FC<ChatUIProps> = ({
         selectedSubject !== 'all' ? currentSubjectObj.name : undefined
       );
 
+      // 4. Append fresh AI response
       const tutorMessage: ChatMessage = {
-        id: `tutor-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        id: `tutor-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         role: 'model',
         content: response.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
