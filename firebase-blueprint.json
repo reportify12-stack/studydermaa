@@ -25,6 +25,10 @@
         "themePreference": { "type": "string" },
         "colorMode": { "type": "string" },
         "isSuspended": { "type": "boolean" },
+        "pksk_access": { "type": "boolean" },
+        "pksk_sekolah_pilihan": { "type": "string" },
+        "pksk_target_level": { "type": "string", "enum": ["Tahun 6", "Tingkatan 3"] },
+        "pksk_exam_date": { "type": "string" },
         "createdAt": { "type": "string" },
         "updatedAt": { "type": "string" }
       },
@@ -202,6 +206,24 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["title", "description", "date", "time", "meetingLink", "status"]
+    },
+    "PkskAttempt": {
+      "title": "PkskAttempt",
+      "description": "Student PKSK simulation attempt and score analytics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "level": { "type": "string" },
+        "sekolahPilihan": { "type": "string" },
+        "scorePercentage": { "type": "number" },
+        "correctCount": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "insaniahScore": { "type": "object" },
+        "intelekScore": { "type": "object" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["uid", "scorePercentage", "totalQuestions", "completedAt"]
     }
   },
   "firestore": {
@@ -248,6 +270,10 @@
     "/seminars/{seminarId}": {
       "schema": "Seminar",
       "description": "Live seminars and interactive sessions"
+    },
+    "/pkskAttempts/{attemptId}": {
+      "schema": "PkskAttempt",
+      "description": "Student PKSK simulation attempts"
     }
   }
 }

@@ -48,6 +48,13 @@ import { TeacherLayout } from './components/layout/TeacherLayout';
 import { TeacherProtectedRoute } from './components/auth/TeacherProtectedRoute';
 import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
 
+// PKSK Portal
+import { PKSKProtectedRoute } from './components/pksk/PKSKProtectedRoute';
+import { PkskLayout } from './components/pksk/PkskLayout';
+import { PkskDashboardPage } from './pages/pksk/PkskDashboardPage';
+import { PkskExamPage } from './pages/pksk/PkskExamPage';
+import { PkskPurchasePage } from './pages/pksk/PkskPurchasePage';
+
 import { Loader2 } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -290,6 +297,42 @@ const AppContent: React.FC = () => {
             </div>
           </div>
         </div>
+      );
+    }
+
+    // PKSK Portal: Purchase Access Page
+    if (currentPath === '/pksk/purchase' || currentPath === '/pksk/beli') {
+      if (!user) {
+        navigate('/login');
+        return null;
+      }
+      return <PkskPurchasePage navigate={navigate} />;
+    }
+
+    // PKSK Portal: Exclusive Protected Portal Routes
+    if (currentPath.startsWith('/pksk')) {
+      if (!user) {
+        navigate('/login');
+        return null;
+      }
+
+      let pkskSubView = <PkskDashboardPage navigate={navigate} />;
+      if (
+        currentPath === '/pksk/simulasi' ||
+        currentPath.startsWith('/pksk/exam') ||
+        currentPath.startsWith('/pksk/simulation')
+      ) {
+        pkskSubView = <PkskExamPage navigate={navigate} />;
+      } else {
+        pkskSubView = <PkskDashboardPage navigate={navigate} />;
+      }
+
+      return (
+        <PKSKProtectedRoute navigate={navigate} redirectTo="/pksk/purchase">
+          <PkskLayout currentRoute={currentPath} navigate={navigate}>
+            {pkskSubView}
+          </PkskLayout>
+        </PKSKProtectedRoute>
       );
     }
 

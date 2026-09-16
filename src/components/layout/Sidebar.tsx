@@ -15,6 +15,7 @@ import {
   Video,
   Globe,
   X,
+  Crown,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -36,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const studentNavItems = [
     { label: t('nav_home'), path: '/dashboard', icon: Home, id: 'nav-home' },
+    { label: 'Simulasi PKSK', path: '/pksk', icon: Crown, id: 'nav-pksk', badge: 'VIP' },
     { label: 'Language Hub', path: '/language-hub', icon: Globe, id: 'nav-language-hub', badge: 'AI' },
     { label: t('nav_ai_tutor'), path: '/ai-tutor', icon: Sparkles, id: 'nav-ai-tutor', badge: 'KSSM' },
     { label: t('nav_seminars'), path: '/seminars', icon: Video, id: 'nav-seminars' },

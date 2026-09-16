@@ -28,6 +28,7 @@ import {
   Clock,
   ShieldAlert,
   Globe,
+  Crown,
 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -234,6 +235,41 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
         >
           <Sparkles className="w-4 h-4" />
           <span>{t('dashboard_tutor_banner_btn')}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Simulasi PKSK Portal VIP Card */}
+      <div
+        id="dashboard-pksk-banner"
+        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-stone-900/10 dark:from-amber-950/50 dark:via-stone-900/60 dark:to-stone-950 border border-amber-300/80 dark:border-amber-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+      >
+        <div className="flex items-start gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-stone-950 flex items-center justify-center shrink-0 shadow-sm font-black">
+            <Crown className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 font-display">
+                Simulasi PKSK 2026 (Sekolah Khusus)
+              </h2>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 border border-amber-400/40">
+                Tahun 6 & Tingkatan 3
+              </span>
+            </div>
+            <p className="text-xs text-stone-600 dark:text-stone-300 max-w-xl leading-relaxed">
+              Portal eksklusif simulasi peperiksaan kemasukan MRSM, SBP, SMKA, dan MTD dengan soalan adaptif Kecerdasan Insaniah (EQ) dan Kecerdasan Intelek (IQ).
+            </p>
+          </div>
+        </div>
+
+        <button
+          id="dashboard-launch-pksk-btn"
+          onClick={() => navigate('/pksk')}
+          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 text-xs font-black active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+        >
+          <Crown className="w-4 h-4" />
+          <span>Buka Portal PKSK</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

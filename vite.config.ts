@@ -67,7 +67,7 @@ function aistudioMediaPlugin(): Plugin {
 /**
  * Calls Gemini models with automatic failover and resilience against 503 (high demand spikes)
  * or 429 rate limit errors.
- * Sequence: Primary (gemini-3.8-flash) -> Secondary (gemini-3.6-flash) -> Tertiary (gemini-3.1-flash-lite) -> Quaternary (gemini-flash-latest).
+ * Sequence: Primary (gemini-3.8-flash) -> Secondary (gemini-3.6-flash) -> Tertiary (gemini-3.1-flash-lite) -> Quaternary (gemini-flash-latest) -> Quinary (gemini-3.1-pro-preview).
  */
 async function callGeminiWithFailover(
   ai: any,
@@ -83,6 +83,7 @@ async function callGeminiWithFailover(
     'gemini-3.6-flash',
     'gemini-3.1-flash-lite',
     'gemini-flash-latest',
+    'gemini-3.1-pro-preview',
   ].filter((m, idx, arr) => arr.indexOf(m) === idx);
 
   let lastError: any = null;
@@ -115,15 +116,11 @@ async function callGeminiWithFailover(
         msg.includes('quota') ||
         msg.includes('overloaded');
 
-      console.warn(
-        `[Gemini Failover] Model "${currentModel}" unavailable or busy (${status || 'error'}: ${msg.slice(0, 90)}...). ${
-          i < models.length - 1 ? `Failing over to "${models[i + 1]}"...` : 'All Gemini models exhausted.'
-        }`
-      );
-
-      if (i < models.length - 1 && isDemandOrRateSpike) {
-        // Short pause before attempting backup model
-        await new Promise((r) => setTimeout(r, 200));
+      // Informational debug message about failover transition
+      if (i < models.length - 1) {
+        // Backoff slightly before attempting subsequent failover model
+        const delayMs = isDemandOrRateSpike ? 250 : 100;
+        await new Promise((r) => setTimeout(r, delayMs));
       }
     }
   }
@@ -435,6 +432,139 @@ CRITICAL CONVERSATION GUIDELINES:
               res.setHeader('Content-Type', 'application/json');
               res.statusCode = 200;
               res.end(JSON.stringify({ reply: 'Hai! Sila kemukakan semula soalan subjek KSSM anda.', source: 'fallback' }));
+            }
+          });
+          return;
+        }
+
+        // 4. PKSK Simulation Question Generator (/api/gemini/pksk-simulation)
+        if (req.url && req.url.startsWith('/api/gemini/pksk-simulation') && req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk;
+          });
+          req.on('end', async () => {
+            try {
+              const payload = JSON.parse(body || '{}');
+              const { level = 'Tingkatan 3', sekolahPilihan = 'MRSM Pengkalan Chepa' } = payload;
+              const apiKey = process.env.GEMINI_API_KEY;
+
+              if (apiKey) {
+                try {
+                  const { GoogleGenAI } = await import('@google/genai');
+                  const ai = new GoogleGenAI({
+                    apiKey,
+                    httpOptions: {
+                      headers: {
+                        'User-Agent': 'aistudio-build',
+                      },
+                    },
+                  });
+
+                  const isForm3 = level === 'Tingkatan 3';
+                  const systemInstruction = `You are an elite psychometrician and PKSK (Pentaksiran Kemasukan Sekolah Khusus) specialist for Kementerian Pendidikan Malaysia (KPM) and MARA admission.
+You will generate an authentic, high-caliber 5-question multiple choice PKSK simulation assessment for Malaysian students.
+Target Audience: ${level} students (approx. ${isForm3 ? '15 years old / Form 3 sitting for entry to Form 4 MRSM/SBP/SMKA/MTD/KV' : '12 years old / Grade 6 sitting for entry to Form 1 MRSM/SBP/SMKA'}).
+Target School of choice: "${sekolahPilihan}".
+
+MANDATORY SPECIFICATIONS:
+1. Generate EXACTLY 5 questions:
+   - Question 1 & Question 2: 'Kecerdasan Insaniah' (EQ, Empathy, Integrity, Leadership, Conflict Resolution, Moral Maturity in Malaysian student/hostel/classroom contexts).
+   - Question 3, Question 4, & Question 5: 'Kecerdasan Intelek' (IQ, Logical Reasoning, STEM curiosity, Pattern Deduction, and Malaysian General Knowledge / Sejarah / Kenegaraan).
+2. Each question MUST have exactly 4 plausible choices (options) and 1 indicated "correctIndex" (0, 1, 2, or 3).
+3. Include a clear, motivating "explanation" in standard Bahasa Melayu explaining why that answer reflects the highest emotional intelligence (for Insaniah) or correct factual/logical deduction (for Intelek).
+4. STRICT JSON REQUIREMENT: Return ONLY a single raw JSON object. NO markdown tags (\`\`\`json), NO preamble, NO postscript.
+
+JSON SCHEMA:
+{
+  "level": "${level}",
+  "sekolahPilihan": "${sekolahPilihan}",
+  "questions": [
+    {
+      "id": 1,
+      "type": "insaniah",
+      "categoryLabel": "Kecerdasan Insaniah (EQ & Kepimpinan)",
+      "question": "Senario situasi dalam Bahasa Melayu...",
+      "options": ["Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D"],
+      "correctIndex": 0,
+      "explanation": "Penerangan pedagogi mengapa pilihan ini menunjukkan kematangan emosi dan integriti tertinggi..."
+    }
+  ]
+}`;
+
+                  const contents = [
+                    {
+                      role: 'user',
+                      parts: [
+                        {
+                          text: `Sila jana set simulasi PKSK 5 soalan (2 Kecerdasan Insaniah + 3 Kecerdasan Intelek) untuk pelajar ${level} yang bercita-cita memasuki ${sekolahPilihan}. Sediakan soalan berformat standard pentaksiran KPM.`,
+                        },
+                      ],
+                    },
+                  ];
+
+                  const { response, modelUsed } = await callGeminiWithFailover(ai, {
+                    contents,
+                    config: {
+                      systemInstruction,
+                      temperature: 0.6,
+                    },
+                    primaryModel: 'gemini-3.8-flash',
+                  });
+
+                  let text = response.text ? response.text.trim() : '';
+                  // Clean up potential markdown formatting
+                  if (text.startsWith('```json')) {
+                    text = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+                  } else if (text.startsWith('```')) {
+                    text = text.replace(/^```\s*/, '').replace(/\s*```$/, '');
+                  }
+
+                  const parsed = JSON.parse(text);
+                  if (parsed && Array.isArray(parsed.questions) && parsed.questions.length === 5) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.statusCode = 200;
+                    res.end(
+                      JSON.stringify({
+                        success: true,
+                        source: 'gemini',
+                        model: modelUsed,
+                        data: parsed,
+                      })
+                    );
+                    return;
+                  }
+                } catch (geminiErr: any) {
+                  console.warn(
+                    `[PKSK Generator] Gemini failover / demand spike (${geminiErr?.message || '503'}). Seamlessly activating authentic curated PKSK simulation set.`
+                  );
+                }
+              }
+
+              // Resilient Fallback Question Bank
+              const fallbackData = getPkskSimulationFallback(level, sekolahPilihan);
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 200;
+              res.end(
+                JSON.stringify({
+                  success: true,
+                  source: 'curated_bank',
+                  model: 'pksk-curriculum-engine',
+                  data: fallbackData,
+                })
+              );
+            } catch (err: any) {
+              console.error('PKSK generation handler error:', err);
+              const fallbackData = getPkskSimulationFallback('Tingkatan 3', 'MRSM Pengkalan Chepa');
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 200;
+              res.end(
+                JSON.stringify({
+                  success: true,
+                  source: 'curated_bank',
+                  data: fallbackData,
+                })
+              );
             }
           });
           return;
@@ -948,6 +1078,181 @@ Saya boleh membantu anda untuk:
 - **Sejarah & Bahasa Melayu:** Rumusan, Karangan Berformat, Kronologi Peristiwa KSSM.
 
 Sila ajukan soalan khusus atau topik bab yang ingin kita pelajari sekarang!`;
+}
+
+/**
+ * Curated authentic PKSK questions bank (Kecerdasan Insaniah & Kecerdasan Intelek)
+ * for Grade 6 and Form 3 Malaysian students.
+ */
+function getPkskSimulationFallback(level: string, targetSchool?: string) {
+  const isForm3 = level === 'Tingkatan 3';
+
+  if (isForm3) {
+    return {
+      level: 'Tingkatan 3',
+      sekolahPilihan: targetSchool || 'MRSM Pengkalan Chepa',
+      questions: [
+        {
+          id: 1,
+          type: 'insaniah',
+          categoryLabel: 'Kecerdasan Insaniah (EQ, Kepimpinan & Integriti)',
+          question:
+            'Anda merupakan ketua bilik di asrama. Semasa waktu prep malam, anda mendapati rakan karib anda sedang bermain telefon pintar yang diseludup masuk ke asrama kerana merasa sangat tertekan dengan peperiksaan esok. Apakah tindakan paling matang dan bertanggungjawab?',
+          options: [
+            'Membiarkan rakan tersebut kerana memahami tekanannya dan dia ialah kawan karib anda.',
+            'Merampas telefonnya dengan kasar di hadapan rakan-rakan sebilik yang lain untuk menunjukkan ketegasan undang-undang.',
+            'Menegur secara tenang, mengajaknya berbual seketika untuk meredakan tekanan, dan meminta dia menyerahkan telefon tersebut secara sukarela kepada warden keesokan paginya.',
+            'Segera melaporkan kepada warden tanpa berbincang atau bertanya punca rakan anda berbuat demikian.',
+          ],
+          correctIndex: 2,
+          explanation:
+            'Pilihan ini mengimbangi empati mendalam dengan pematuhan integriti peraturan sekolah khusus. Pendekatan berhemah dan bimbingan emosi mencerminkan ciri kepimpinan insaniah tertinggi dalam PKSK.',
+        },
+        {
+          id: 2,
+          type: 'insaniah',
+          categoryLabel: 'Kecerdasan Insaniah (Penyelesaian Konflik & Kerja Berpasukan)',
+          question:
+            'Kumpulan projek inovasi STEM anda terdiri daripada 4 orang. Menjelang 2 hari sebelum tarikh akhir pembentangan, seorang ahli kumpulan menarik diri daripada bahagian tugasannya kerana berselisih faham mengenai reka bentuk prototaip. Bagaimanakah anda mengendalikan situasi ini?',
+          options: [
+            'Mengeluarkan nama rakan tersebut daripada senarai ahli kumpulan dan mengadu kepada guru pembimbing.',
+            'Mendengar pandangan rakan tersebut secara terbuka tanpa menghakimi, mencari titik kompromi bagi reka bentuk prototaip, dan mengagihkan semula baki tugas secara adil.',
+            'Memaksa rakan tersebut mengikut kehendak majoriti kerana masa sudah terlalu suntuk.',
+            'Menyiapkan keseluruhan bahagian rakan tersebut seorang diri demi markah peribadi tanpa mempedulikan hubungan persahabatan.',
+          ],
+          correctIndex: 1,
+          explanation:
+            'Kecerdasan insaniah mengutamakan kemahiran mendengar aktif, empati, serta kebolehan meredakan konflik melalui jalan tengah demi kejayaan kolektif pasukan.',
+        },
+        {
+          id: 3,
+          type: 'intelek',
+          categoryLabel: 'Kecerdasan Intelek (Penaakulan Logik & Pola Corak)',
+          question:
+            'Perhatikan corak urutan logik berikut: 4, 9, 19, 39, 79, ... Apakah nombor seterusnya dalam urutan ini?',
+          options: ['119', '159', '149', '169'],
+          correctIndex: 1,
+          explanation:
+            'Corak urutan ialah mendarab dengan 2 kemudian menambah 1: (4×2)+1 = 9; (9×2)+1 = 19; (19×2)+1 = 39; (39×2)+1 = 79; maka (79×2)+1 = 158 + 1 = 159.',
+        },
+        {
+          id: 4,
+          type: 'intelek',
+          categoryLabel: 'Kecerdasan Intelek (STEM & Aplikasi Sains KSSM)',
+          question:
+            'Mengapakah panel suria (solar panel) di bumbung rumah biasanya dicat dengan warna hitam atau gelap berbanding warna putih atau perak?',
+          options: [
+            'Warna hitam memantulkan lebih banyak sinar ultraungu untuk keselamatan bumbung.',
+            'Permukaan hitam dan gelap merupakan penyerap haba dan sinaran cahaya matahari yang paling cekap berbanding permukaan berkilat atau cerah.',
+            'Warna gelap mengurangkan rintangan elektrik di dalam litar semikonduktor silikon.',
+            'Bahan silikon hanya boleh dihasilkan dalam pigmen warna hitam mengikut piawaian antarabangsa.',
+          ],
+          correctIndex: 1,
+          explanation:
+            'Berdasarkan prinsip fizik radiasi haba, objek berwarna hitam atau legap gelap ialah penyerap radiasi haba dan cahaya matahari yang paling baik, memaksimumkan penyerapan foton tenaga.',
+        },
+        {
+          id: 5,
+          type: 'intelek',
+          categoryLabel: 'Kecerdasan Intelek (Kenegaraan & Pengetahuan Am Malaysia)',
+          question:
+            'Dalam Prinsip Rukun Negara yang ketiga, "Keluhuran Perlembagaan" membawa maksud:',
+          options: [
+            'Raja Berperlembagaan mempunyai kuasa mutlak membuat segala dasar undang-undang negara.',
+            'Perlembagaan Persekutuan ialah undang-undang tertinggi negara yang menjadi sumber rujukan utama dan tiada undang-undang lain yang boleh bercanggah dengannya.',
+            'Setiap warganegara wajib menyertai pasukan keselamatan negara secara automatik.',
+            'Mahkamah Rendah mempunyai kuasa membatalkan enakmen Parlimen tanpa prosiding kehakiman.',
+          ],
+          correctIndex: 1,
+          explanation:
+            'Keluhuran Perlembagaan merujuk kepada kedudukan Perlembagaan Persekutuan sebagai dokumen perundangan tertinggi di Malaysia. Segala undang-undang yang digubal mesti selaras dan tidak bercanggah dengannya.',
+        },
+      ],
+    };
+  }
+
+  // Fallback for Tahun 6 (Grade 6 -> Tingkatan 1)
+  return {
+    level: 'Tahun 6',
+    sekolahPilihan: targetSchool || 'MRSM / SBP Premier',
+    questions: [
+      {
+        id: 1,
+        type: 'insaniah',
+        categoryLabel: 'Kecerdasan Insaniah (EQ, Integriti & Sahsiah)',
+        question:
+          'Semasa waktu rehat di sekolah, anda ternampak seorang murid Tahun 1 menangis di sudut koridor kerana kehilangan wang sakunya. Pada masa yang sama, loceng masuk kelas akan berbunyi dalam masa 2 minit. Apakah tindakan paling wajar yang patut anda ambil?',
+        options: [
+          'Mengabaikannya kerana loceng hendak berbunyi dan anda takut dimarahi guru kelas.',
+          'Menenangkan murid tersebut, berkongsi sedikit bekal makanan yang anda bawa, dan membimbingnya ke bilik guru bertugas untuk mendapatkan bantuan.',
+          'Memberitahu pengawas bertugas secara sepintas lalu sambil berlari ke kelas anda sendiri.',
+          'Menasihati murid itu supaya tidak membawa wang lagi ke sekolah pada masa hadapan.',
+        ],
+        correctIndex: 1,
+        explanation:
+          'Menunjukkan empati yang tinggi, sifat prihatin terhadap murid yang lebih muda, dan tindakan bertanggungjawab membawa kepada penyelesaian selamat.',
+      },
+      {
+        id: 2,
+        type: 'insaniah',
+        categoryLabel: 'Kecerdasan Insaniah (Kerjasama & Kematangan Emosi)',
+        question:
+          'Cikgu memberikan tugasan berkumpulan untuk melukis poster Hari Kebangsaan. Rakan sekumpulan anda tidak mahu melukis corak yang anda cadangkan dan berkeras mahukan ideanya sahaja. Bagaimanakah anda bertindak?',
+        options: [
+          'Merajuk dan membiarkan dia menyiapkan poster itu seorang diri.',
+          'Mengajak rakan tersebut berbincang dengan menggabungkan idea kreatif kedua-dua pihak supaya poster menjadi lebih menarik.',
+          'Mengadu kepada guru bahawa rakan anda seorang yang pentingkan diri sendiri.',
+          'Mengalah sepenuhnya walaupun anda tahu idea rakan tersebut tidak mematuhi tema pertandingan.',
+        ],
+        correctIndex: 1,
+        explanation:
+          'Kematangan emosi dipamerkan melalui rundingan positif dan keupayaan mensinergikan pelbagai idea menjadi hasil karya yang lebih bermutu.',
+      },
+      {
+        id: 3,
+        type: 'intelek',
+        categoryLabel: 'Kecerdasan Intelek (Penaakulan Logik Matematik)',
+        question:
+          'Sebuah tangki air mempunyai 60 liter air. Setiap 5 minit, sebanyak 3 liter air dikeluarkan. Berapakah masa (dalam minit) yang diperlukan untuk mengosongkan baki separuh daripada isi padu air tangki tersebut?',
+        options: ['40 minit', '50 minit', '60 minit', '100 minit'],
+        correctIndex: 1,
+        explanation:
+          'Separuh isi padu tangki = 30 liter. Kadar pengeluaran air = 3 liter setiap 5 minit (iaitu 0.6 liter seminit). Masa diambil = 30 liter ÷ 0.6 liter/minit = 50 minit (atau 10 kali 5 minit = 50 minit).',
+      },
+      {
+        id: 4,
+        type: 'intelek',
+        categoryLabel: 'Kecerdasan Intelek (Sains Alam Semula Jadi)',
+        question:
+          'Mengapakah bayang-bayang suatu tiang bendera di padang sekolah menjadi paling pendek sekitar waktu tengah hari (1:00 petang)?',
+        options: [
+          'Kedudukan matahari berada hampir tepat di atas kepala (puncak zenit), menyebabkan sudut pancaran cahaya matahari hampir tegak ke bawah.',
+          'Cahaya matahari waktu tengah hari lebih panas sehingga mencairkan sebahagian bayang-bayang.',
+          'Awan pada waktu tengah hari menyerap semua panjang gelombang cahaya tampak.',
+          'Kelajuan bumi berputar pada paksinya meningkat pada waktu tengah hari.',
+        ],
+        correctIndex: 0,
+        explanation:
+          'Panjang bayang-bayang bergantung kepada sudut pancaran cahaya matahari. Pada tengah hari ketika matahari tegak di atas kepala, bayang-bayang terbentuk tepat di bawah objek dan paling pendek.',
+      },
+      {
+        id: 5,
+        type: 'intelek',
+        categoryLabel: 'Kecerdasan Intelek (Pengetahuan Am & Warisan Malaysia)',
+        question:
+          'Menara Merdeka 118 di Kuala Lumpur merupakan bangunan kedua tertinggi di dunia. Mengapakah menara ini dinamakan "118"?',
+        options: [
+          'Dibina sempena ulang tahun kemerdekaan Malaysia yang ke-118 tahun.',
+          'Mempunyai 118 tingkat lantai dengan reka bentuk terinspirasi daripada gestur laungan "Merdeka!" Tunku Abdul Rahman.',
+          'Tinggi puncak menaranya ialah tepat 1,118 kaki dari paras laut.',
+          'Mempunyai 118 tiang asas konkrit bertetulang di bawah tanah.',
+        ],
+        correctIndex: 1,
+        explanation:
+          'Menara Merdeka 118 mempunyai 118 tingkat lantai. Reka bentuk dan puncaknya diilhamkan daripada gaya tangan Yang Teramat Mulia Tunku Abdul Rahman semasa melaungkan "Merdeka!" pada 31 Ogos 1957.',
+      },
+    ],
+  };
 }
 
 export default defineConfig(() => {

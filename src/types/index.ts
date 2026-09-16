@@ -56,6 +56,11 @@ export interface UserProfile {
   colorMode?: 'light' | 'dark' | 'system';
   isSuspended?: boolean;
   status?: 'active' | 'suspended';
+  // PKSK Premium Portal Fields
+  pksk_access?: boolean;
+  pksk_sekolah_pilihan?: string;
+  pksk_target_level?: 'Tahun 6' | 'Tingkatan 3';
+  pksk_exam_date?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -340,4 +345,5 @@ export interface ClassStudent {
 }
 
 export * from './languageHub';
+export * from './pksk';
 

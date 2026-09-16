@@ -141,6 +141,19 @@ service cloud.firestore {
     }
 
     // ====================================================
+    // PKSK SIMULATION ATTEMPTS (pkskAttempts/{attemptId})
+    // ====================================================
+    match /pkskAttempts/{attemptId} {
+      // Students can read only their own simulation attempts; Admins can view all
+      allow read: if (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+      
+      // Students can create an attempt only for their own UID
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      
+      allow update, delete: if isAdmin();
+    }
+
+    // ====================================================
     // USER PROGRESS (userProgress/{userId}/notes/{noteId})
     // ====================================================
     match /userProgress/{userId} {
