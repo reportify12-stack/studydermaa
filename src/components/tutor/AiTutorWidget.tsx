@@ -23,7 +23,7 @@ export const AiTutorWidget: React.FC<AiTutorWidgetProps> = ({ navigate, currentR
   };
 
   return (
-    <div id="ai-tutor-floating-widget" className="fixed bottom-5 right-5 z-40 flex flex-col items-end">
+    <div id="ai-tutor-floating-widget" className="fixed bottom-5 right-5 z-40 flex flex-col items-end print:hidden">
       {/* Floating Chat Modal Box */}
       {isOpen && (
         <div

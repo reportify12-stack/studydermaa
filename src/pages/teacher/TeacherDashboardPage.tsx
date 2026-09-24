@@ -35,19 +35,39 @@ import {
   Sparkles,
   ExternalLink,
   GraduationCap,
+  Printer,
+  Eye,
 } from 'lucide-react';
 
 interface TeacherDashboardPageProps {
   navigate: (route: string) => void;
+  currentRoute?: string;
 }
 
 type TabType = 'classes' | 'assignments' | 'students';
 
-export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({ navigate }) => {
+export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
+  navigate,
+  currentRoute,
+}) => {
   const { t } = useTranslation();
   const { userProfile } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<TabType>('classes');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    if (currentRoute === '/teacher/assignments') return 'assignments';
+    if (currentRoute === '/teacher/students') return 'students';
+    return 'classes';
+  });
+
+  useEffect(() => {
+    if (currentRoute === '/teacher/assignments') {
+      setActiveTab('assignments');
+    } else if (currentRoute === '/teacher/students') {
+      setActiveTab('students');
+    } else if (currentRoute === '/teacher' || currentRoute === '/teacher-dashboard') {
+      setActiveTab('classes');
+    }
+  }, [currentRoute]);
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -749,8 +769,8 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({ navi
                           </div>
                         </div>
 
-                        {/* Right side: Submissions count & Delete */}
-                        <div className="flex items-center sm:flex-col sm:items-end justify-between gap-2 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-stone-100 dark:border-stone-800">
+                        {/* Right side: Submissions count, View Submissions & Delete */}
+                        <div className="flex items-center sm:flex-col sm:items-end justify-between gap-2.5 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-stone-100 dark:border-stone-800">
                           <div className="text-left sm:text-right">
                             <span className="text-xs font-bold text-stone-900 dark:text-stone-100 block">
                               {assignment.submissionsCount || 0} {t('submissions', 'Dihantar')}
@@ -760,15 +780,28 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({ navi
                             </span>
                           </div>
 
-                          <button
-                            id={`delete-assignment-${assignment.id}-btn`}
-                            type="button"
-                            onClick={() => handleDeleteAssignment(assignment.id, assignment.title)}
-                            className="p-2 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                            title={t('delete_task', 'Padam Tugasan')}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              id={`view-submissions-${assignment.id}-btn`}
+                              type="button"
+                              onClick={() => navigate(`/teacher/submissions/${assignment.id}`)}
+                              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                              title={t('view_and_print_submissions', 'Lihat serahan murid & cetak')}
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                              <span>{t('view_submissions', 'Lihat Serahan')}</span>
+                            </button>
+
+                            <button
+                              id={`delete-assignment-${assignment.id}-btn`}
+                              type="button"
+                              onClick={() => handleDeleteAssignment(assignment.id, assignment.title)}
+                              className="p-2 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                              title={t('delete_task', 'Padam Tugasan')}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );

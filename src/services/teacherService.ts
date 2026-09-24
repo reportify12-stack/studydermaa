@@ -265,22 +265,56 @@ export async function deleteAssignment(assignmentId: string): Promise<void> {
 }
 
 /**
- * Fetch submissions for an assignment
+ * Fetch a single assignment by document ID
+ */
+export async function fetchAssignmentById(assignmentId: string): Promise<Assignment | null> {
+  if (!assignmentId) return null;
+  try {
+    const docRef = doc(db, ASSIGNMENTS_COLLECTION, assignmentId);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return null;
+    return {
+      id: snap.id,
+      ...(snap.data() as Omit<Assignment, 'id'>),
+    };
+  } catch (err) {
+    console.error('Failed to fetch assignment by ID:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch submissions for an assignment from Firestore
+ * Checks both assignmentSubmissions and submissions collections for maximum compatibility
  */
 export async function fetchAssignmentSubmissions(assignmentId: string): Promise<AssignmentSubmission[]> {
+  if (!assignmentId) return [];
   try {
-    const q = query(
-      collection(db, SUBMISSIONS_COLLECTION),
-      where('assignmentId', '==', assignmentId)
-    );
-    const snap = await getDocs(q);
-    const submissions: AssignmentSubmission[] = [];
-    snap.forEach((d) => {
-      submissions.push({
-        id: d.id,
-        ...(d.data() as Omit<AssignmentSubmission, 'id'>),
-      });
-    });
+    const collectionsToQuery = [SUBMISSIONS_COLLECTION, 'submissions'];
+    const submissionsMap = new Map<string, AssignmentSubmission>();
+
+    for (const collName of collectionsToQuery) {
+      try {
+        const q = query(
+          collection(db, collName),
+          where('assignmentId', '==', assignmentId)
+        );
+        const snap = await getDocs(q);
+        snap.forEach((d) => {
+          if (!submissionsMap.has(d.id)) {
+            submissionsMap.set(d.id, {
+              id: d.id,
+              ...(d.data() as Omit<AssignmentSubmission, 'id'>),
+            });
+          }
+        });
+      } catch (e) {
+        // Continue if one collection doesn't exist
+      }
+    }
+
+    const submissions = Array.from(submissionsMap.values());
+    submissions.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
     return submissions;
   } catch (err) {
     console.error('Failed to fetch assignment submissions:', err);

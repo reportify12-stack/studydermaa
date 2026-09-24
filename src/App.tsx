@@ -44,6 +44,7 @@ import { AdminSeminarsPage } from './pages/admin/AdminSeminarsPage';
 
 // Pages - Teacher Portal
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
+import { TeacherSubmissionsPage } from './pages/teacher/TeacherSubmissionsPage';
 import { TeacherLayout } from './components/layout/TeacherLayout';
 import { TeacherProtectedRoute } from './components/auth/TeacherProtectedRoute';
 import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
@@ -179,6 +180,25 @@ const AppContent: React.FC = () => {
     // If a user with role: 'student' attempts to access /teacher-dashboard or any /teacher routes,
     // they are immediately redirected to /student-dashboard with an 'Access Denied' alert.
     if (currentPath === '/teacher-dashboard' || currentPath.startsWith('/teacher')) {
+      const submissionsWithIdMatch =
+        currentPath.match(/^\/teacher\/submissions\/([a-zA-Z0-9_-]+)$/) ||
+        currentPath.match(/^\/teacher\/assignments\/([a-zA-Z0-9_-]+)\/submissions$/);
+
+      let teacherSubView = (
+        <TeacherDashboardPage navigate={navigate} currentRoute={currentPath} />
+      );
+
+      if (submissionsWithIdMatch) {
+        teacherSubView = (
+          <TeacherSubmissionsPage
+            assignmentId={submissionsWithIdMatch[1]}
+            navigate={navigate}
+          />
+        );
+      } else if (currentPath === '/teacher/submissions') {
+        teacherSubView = <TeacherSubmissionsPage navigate={navigate} />;
+      }
+
       return (
         <RoleProtectedRoute
           allowedRoles={['teacher', 'admin']}
@@ -187,7 +207,7 @@ const AppContent: React.FC = () => {
           onAccessDenied={(msg) => setAccessDeniedMessage(msg)}
         >
           <TeacherLayout currentRoute={currentPath} navigate={navigate}>
-            <TeacherDashboardPage navigate={navigate} />
+            {teacherSubView}
           </TeacherLayout>
         </RoleProtectedRoute>
       );

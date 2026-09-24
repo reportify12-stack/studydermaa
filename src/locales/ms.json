@@ -72,6 +72,9 @@
     "no_assignments_desc": "Beri latihan KBAT, kerja rumah, atau kuiz bertulis kepada kelas anda dengan tarikh akhir.",
     "submissions": "Dihantar",
     "due_date": "Tarikh Akhir",
-    "back_to_student_portal": "Kembali ke Portal Pelajar"
+    "back_to_student_portal": "Kembali ke Portal Pelajar",
+    "teacher_nav_submissions": "Semakan Serahan & Cetak",
+    "view_submissions": "Lihat Serahan & Cetak",
+    "view_and_print_submissions": "Lihat serahan murid & cetak"
   }
 }

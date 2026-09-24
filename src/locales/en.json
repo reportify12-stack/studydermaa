@@ -72,6 +72,9 @@
     "no_assignments_desc": "Assign KBAT exercises, homework, or written quizzes to your class with due dates.",
     "submissions": "Submitted",
     "due_date": "Due Date",
-    "back_to_student_portal": "Back to Student Portal"
+    "back_to_student_portal": "Back to Student Portal",
+    "teacher_nav_submissions": "Submissions & Print",
+    "view_submissions": "View Submissions & Print",
+    "view_and_print_submissions": "View student submissions & print"
   }
 }

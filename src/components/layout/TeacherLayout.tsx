@@ -10,6 +10,7 @@ import {
   Shield,
   BookOpen,
   LogOut,
+  Printer,
 } from 'lucide-react';
 
 interface TeacherLayoutProps {
@@ -40,6 +41,12 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
       id: 'teacher-nav-assignments',
     },
     {
+      label: t('teacher_nav_submissions', 'Semakan Serahan & Cetak'),
+      path: '/teacher/submissions',
+      icon: Printer,
+      id: 'teacher-nav-submissions',
+    },
+    {
       label: t('teacher_nav_students', 'Senarai Murid'),
       path: '/teacher/students',
       icon: Users,
@@ -50,12 +57,12 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   return (
     <div
       id="teacher-portal-root"
-      className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-stone-50/60 dark:bg-stone-950/60"
+      className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-stone-50/60 dark:bg-stone-950/60 print:bg-white print:block print:m-0 print:p-0"
     >
       {/* Teacher Sidebar */}
       <aside
         id="teacher-sidebar"
-        className="w-full md:w-64 shrink-0 border-r border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 flex flex-col justify-between"
+        className="w-full md:w-64 shrink-0 border-r border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 flex flex-col justify-between print:hidden"
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
@@ -154,8 +161,8 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
       </aside>
 
       {/* Main Content Area */}
-      <main id="teacher-main-content" className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">{children}</div>
+      <main id="teacher-main-content" className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto print:p-0 print:m-0 print:overflow-visible">
+        <div className="max-w-6xl mx-auto print:max-w-none print:w-full print:m-0 print:p-0">{children}</div>
       </main>
     </div>
   );
