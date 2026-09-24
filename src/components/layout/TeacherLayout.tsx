@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Shield,
   BookOpen,
+  LogOut,
 } from 'lucide-react';
 
 interface TeacherLayoutProps {
@@ -23,7 +24,7 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
   children,
 }) => {
   const { t } = useTranslation();
-  const { userProfile, isAdmin } = useAuth();
+  const { userProfile, isAdmin, logout } = useAuth();
 
   const teacherNavItems = [
     {
@@ -128,15 +129,27 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
             </button>
           )}
 
-          <button
-            id="teacher-back-to-student-btn"
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>{t('back_to_student_portal', 'Kembali ke Portal Pelajar')}</span>
-          </button>
+          {isAdmin ? (
+            <button
+              id="teacher-back-to-student-btn"
+              type="button"
+              onClick={() => navigate('/student-dashboard')}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>{t('back_to_student_portal', 'Kembali ke Portal Pelajar')}</span>
+            </button>
+          ) : (
+            <button
+              id="teacher-logout-btn"
+              type="button"
+              onClick={() => logout()}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{t('nav_logout', 'Log Keluar')}</span>
+            </button>
+          )}
         </div>
       </aside>
 

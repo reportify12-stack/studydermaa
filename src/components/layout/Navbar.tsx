@@ -67,8 +67,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             id="brand-logo-btn"
-            onClick={() => navigate(userProfile ? '/dashboard' : '/')}
-            className="flex items-center text-left group focus:outline-hidden py-1"
+            onClick={() => {
+              if (!userProfile) {
+                navigate('/');
+              } else if (userProfile.role === 'teacher') {
+                navigate('/teacher-dashboard');
+              } else if (userProfile.role === 'admin') {
+                navigate('/admin');
+              } else {
+                navigate('/student-dashboard');
+              }
+            }}
+            className="flex items-center text-left group focus:outline-hidden py-1 cursor-pointer"
             aria-label="study.dermaa Laman Utama"
           >
             <img
@@ -199,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         {userProfile.fullName}
                       </p>
                       <p className="text-[11px] text-stone-400 truncate">
-                        @{userProfile.username} • {userProfile.tingkatan}
+                        @{userProfile.username} • {userProfile.role === 'teacher' ? 'Pendidik' : userProfile.tingkatan || 'Pelajar'}
                       </p>
                     </div>
 
@@ -221,14 +231,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span>Tetapan & Tema</span>
                     </button>
 
-                    <button
-                      id="dropdown-teacher-link"
-                      onClick={() => navigate('/teacher')}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
-                    >
-                      <GraduationCap className="w-4 h-4 text-emerald-500" />
-                      <span>Portal Guru SMK Derma</span>
-                    </button>
+                    {(isTeacher || userProfile.role === 'teacher' || isAdmin) && (
+                      <button
+                        id="dropdown-teacher-link"
+                        onClick={() => navigate('/teacher-dashboard')}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                      >
+                        <GraduationCap className="w-4 h-4 text-emerald-500" />
+                        <span>Portal Guru SMK Derma</span>
+                      </button>
+                    )}
 
                     {isAdmin && (
                       <button

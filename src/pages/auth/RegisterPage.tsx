@@ -49,21 +49,23 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
 
     setLoading(true);
     try {
-      await registerStudent({
+      const profile = await registerStudent({
         fullName,
         username,
         email: email.trim() || undefined,
         password,
-        tingkatan,
+        ...(selectedRole === 'student' ? { tingkatan } : {}),
         school: school.trim() || undefined,
         role: selectedRole,
       });
 
-      // Successful registration -> Navigate to teacher portal or student dashboard
-      if (selectedRole === 'teacher') {
-        navigate('/teacher');
+      // Strict role-based redirection
+      if (profile.role === 'teacher' || selectedRole === 'teacher') {
+        navigate('/teacher-dashboard');
+      } else if (profile.role === 'student' || selectedRole === 'student') {
+        navigate('/student-dashboard');
       } else {
-        navigate('/dashboard');
+        navigate('/student-dashboard');
       }
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -105,10 +107,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
 
         {/* Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Account Role Selector (Toggle & Dropdown) */}
+          {/* Account Role Selector (Toggle Buttons only, redundant dropdown removed) */}
           <div className="p-3.5 rounded-2xl bg-stone-50/80 dark:bg-stone-800/40 border border-stone-200/80 dark:border-stone-700/80 space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="register-role-select" className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+              <label className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
                 Pilih Peranan / Select Role <span className="text-rose-500">*</span>
               </label>
               <span className="text-[11px] font-semibold text-stone-400">
@@ -144,20 +146,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
                 <School className="w-3.5 h-3.5" />
                 <span>Teacher / Guru</span>
               </button>
-            </div>
-
-            {/* Explicit Dropdown for accessible form completion */}
-            <div className="pt-1">
-              <select
-                id="register-role-select"
-                aria-label="Select Role"
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value as 'student' | 'teacher')}
-                className="w-full px-3 py-2 text-xs font-medium rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:outline-hidden focus:border-theme-primary cursor-pointer"
-              >
-                <option value="student">Student (Pelajar KSSM)</option>
-                <option value="teacher">Teacher (Guru SMK Derma / Pendidik)</option>
-              </select>
             </div>
           </div>
 
@@ -224,44 +212,66 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
             </div>
           </div>
 
-          {/* Tingkatan & School (2 cols) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
-                Tingkatan <span className="text-rose-500">*</span>
-              </label>
-              <select
-                id="register-tingkatan-select"
-                value={tingkatan}
-                onChange={(e) => setTingkatan(e.target.value as TingkatanType)}
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all"
-                required
-              >
-                {TINGKATAN_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Tingkatan & School: Conditional rendering based on role */}
+          {selectedRole === 'student' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
+                  Tingkatan <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  id="register-tingkatan-select"
+                  value={tingkatan}
+                  onChange={(e) => setTingkatan(e.target.value as TingkatanType)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all cursor-pointer"
+                  required
+                >
+                  {TINGKATAN_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
+                    Sekolah
+                  </label>
+                  <span className="text-[11px] text-stone-400">Pilihan</span>
+                </div>
+                <input
+                  id="register-school-input"
+                  type="text"
+                  value={school}
+                  onChange={(e) => setSchool(e.target.value)}
+                  placeholder="cth: SMK Derma"
+                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-800/40 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all placeholder:text-stone-400"
+                />
+              </div>
+            </div>
+          ) : (
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
-                  Sekolah
+                  Sekolah / Institusi Pendidik
                 </label>
                 <span className="text-[11px] text-stone-400">Pilihan</span>
               </div>
-              <input
-                id="register-school-input"
-                type="text"
-                value={school}
-                onChange={(e) => setSchool(e.target.value)}
-                placeholder="cth: SMK Derma"
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-800/40 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all placeholder:text-stone-400"
-              />
+              <div className="relative">
+                <input
+                  id="register-school-input"
+                  type="text"
+                  value={school}
+                  onChange={(e) => setSchool(e.target.value)}
+                  placeholder="cth: SMK Derma, Kangar"
+                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-800/40 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all placeholder:text-stone-400"
+                />
+                <School className="w-4 h-4 text-stone-400 absolute right-3 top-2.5" />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Password & Confirm Password */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -302,7 +312,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Button with Dynamic Text */}
           <button
             id="register-submit-btn"
             type="submit"
@@ -316,7 +326,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
               </>
             ) : (
               <>
-                <span>DAFTAR AKAUN PELAJAR</span>
+                <span>{selectedRole === 'teacher' ? 'DAFTAR AKAUN GURU' : 'DAFTAR AKAUN PELAJAR'}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

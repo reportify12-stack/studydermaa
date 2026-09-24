@@ -30,12 +30,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ navigate }) => {
     setLoading(true);
     try {
       const profile = await loginUser(cleanIdentifier, password);
-      if (profile.role === 'admin') {
+      if (profile.role === 'teacher') {
+        navigate('/teacher-dashboard');
+      } else if (profile.role === 'student') {
+        navigate('/student-dashboard');
+      } else if (profile.role === 'admin') {
         navigate('/admin');
-      } else if (profile.role === 'teacher') {
-        navigate('/teacher');
       } else {
-        navigate('/dashboard');
+        navigate('/student-dashboard');
       }
     } catch (err: any) {
       console.error('Login error:', err);

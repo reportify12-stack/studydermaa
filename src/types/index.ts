@@ -42,7 +42,7 @@ export interface UserProfile {
   email: string;
   authEmail: string;
   school?: string;
-  tingkatan: TingkatanType;
+  tingkatan?: TingkatanType;
   role: UserRole;
   xp: number;
   level: number;

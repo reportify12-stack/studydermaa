@@ -21,7 +21,7 @@ export interface RegisterStudentData {
   fullName: string;
   username: string;
   password: string;
-  tingkatan: TingkatanType;
+  tingkatan?: TingkatanType;
   email?: string;
   school?: string;
   role?: UserRole;
@@ -155,7 +155,7 @@ export const registerStudent = async (data: RegisterStudentData): Promise<UserPr
     email: data.email?.trim() || '',
     authEmail: authEmail,
     school: data.school?.trim() || '',
-    tingkatan: data.tingkatan,
+    ...(data.role !== 'teacher' && data.tingkatan ? { tingkatan: data.tingkatan } : {}),
     role: data.role || 'student',
     xp: 0,
     level: 1,

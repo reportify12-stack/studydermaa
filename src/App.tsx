@@ -99,7 +99,13 @@ const AppContent: React.FC = () => {
     // Auth routes
     if (currentPath === '/login') {
       if (user && userProfile) {
-        navigate(userProfile.role === 'admin' ? '/admin' : userProfile.role === 'teacher' ? '/teacher' : '/dashboard');
+        navigate(
+          userProfile.role === 'admin'
+            ? '/admin'
+            : userProfile.role === 'teacher'
+            ? '/teacher-dashboard'
+            : '/student-dashboard'
+        );
         return null;
       }
       return <LoginPage navigate={navigate} />;
@@ -107,7 +113,13 @@ const AppContent: React.FC = () => {
 
     if (currentPath === '/register') {
       if (user && userProfile) {
-        navigate(userProfile.role === 'admin' ? '/admin' : userProfile.role === 'teacher' ? '/teacher' : '/dashboard');
+        navigate(
+          userProfile.role === 'admin'
+            ? '/admin'
+            : userProfile.role === 'teacher'
+            ? '/teacher-dashboard'
+            : '/student-dashboard'
+        );
         return null;
       }
       return <RegisterPage navigate={navigate} />;
@@ -124,11 +136,11 @@ const AppContent: React.FC = () => {
         return null;
       }
       if (!isAdmin) {
-        // Not authorized as admin -> redirect to student dashboard with error
+        // Not authorized as admin -> redirect to appropriate dashboard with error
         if (accessDeniedMessage !== 'Akses ditolak. Halaman ini hanya untuk pentadbir.') {
           setAccessDeniedMessage('Akses ditolak. Halaman ini hanya untuk pentadbir.');
         }
-        navigate('/dashboard');
+        navigate(userProfile.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard');
         return null;
       }
 
@@ -164,13 +176,13 @@ const AppContent: React.FC = () => {
 
     // Teacher Routes (Teacher Portal - strictly guarded by RoleProtectedRoute)
     // If a user with role: 'student' attempts to access /teacher-dashboard or any /teacher routes,
-    // they are immediately redirected to /dashboard with an 'Access Denied' alert.
+    // they are immediately redirected to /student-dashboard with an 'Access Denied' alert.
     if (currentPath === '/teacher-dashboard' || currentPath.startsWith('/teacher')) {
       return (
         <RoleProtectedRoute
           allowedRoles={['teacher', 'admin']}
           navigate={navigate}
-          redirectTo="/dashboard"
+          redirectTo="/student-dashboard"
           onAccessDenied={(msg) => setAccessDeniedMessage(msg)}
         >
           <TeacherLayout currentRoute={currentPath} navigate={navigate}>
@@ -186,9 +198,9 @@ const AppContent: React.FC = () => {
         if (userProfile.role === 'admin') {
           navigate('/admin');
         } else if (userProfile.role === 'teacher') {
-          navigate('/teacher');
+          navigate('/teacher-dashboard');
         } else {
-          navigate('/dashboard');
+          navigate('/student-dashboard');
         }
         return null;
       }
@@ -214,6 +226,12 @@ const AppContent: React.FC = () => {
     // Protected Student Routes (requires login)
     if (!user || !userProfile) {
       navigate('/login');
+      return null;
+    }
+
+    // Strict role isolation: Teachers are strictly kept in the teacher portal
+    if (userProfile.role === 'teacher') {
+      navigate('/teacher-dashboard');
       return null;
     }
 
@@ -358,7 +376,11 @@ const AppContent: React.FC = () => {
       studentView = <AiTutorPage navigate={navigate} />;
     } else if (currentPath === '/language-hub' || currentPath === '/languages' || currentPath === '/bahasa') {
       studentView = <LanguageHubPage navigate={navigate} />;
-    } else if (currentPath === '/dashboard' || currentPath === '/utama') {
+    } else if (
+      currentPath === '/dashboard' ||
+      currentPath === '/student-dashboard' ||
+      currentPath === '/utama'
+    ) {
       studentView = <DashboardPage navigate={navigate} />;
     }
 
