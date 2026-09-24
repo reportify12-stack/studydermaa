@@ -47,6 +47,7 @@ import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
 import { TeacherLayout } from './components/layout/TeacherLayout';
 import { TeacherProtectedRoute } from './components/auth/TeacherProtectedRoute';
 import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
+import { StudentAssignmentsPage } from './pages/student/StudentAssignmentsPage';
 
 // PKSK Portal
 import { PKSKProtectedRoute } from './components/pksk/PKSKProtectedRoute';
@@ -356,7 +357,14 @@ const AppContent: React.FC = () => {
 
     // Student Views with Standard Layout
     let studentView = <DashboardPage navigate={navigate} />;
-    if (currentPath === '/belajar' || currentPath === '/learn') {
+    if (
+      currentPath === '/student-assignments' ||
+      currentPath === '/assignments' ||
+      currentPath === '/tugasan' ||
+      currentPath === '/kerja-rumah'
+    ) {
+      studentView = <StudentAssignmentsPage navigate={navigate} />;
+    } else if (currentPath === '/belajar' || currentPath === '/learn') {
       studentView = <BelajarPage navigate={navigate} />;
     } else if (currentPath === '/nota' || currentPath === '/notes') {
       studentView = <NotesListPage navigate={navigate} />;

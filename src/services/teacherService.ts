@@ -423,3 +423,172 @@ export async function fetchStudentJoinedClasses(studentUid: string): Promise<Cla
   }
 }
 
+/**
+ * Fetch all assignments matching the classes a student is enrolled in
+ */
+export async function fetchStudentAssignments(
+  studentUid: string,
+  providedClassIds?: string[]
+): Promise<Assignment[]> {
+  if (!studentUid) return [];
+
+  try {
+    let classIds: string[] = providedClassIds || [];
+
+    // If no classIds provided, fetch the classes the student is enrolled in
+    if (!classIds || classIds.length === 0) {
+      const enrolledClasses = await fetchStudentJoinedClasses(studentUid);
+      classIds = enrolledClasses.map((c) => c.id);
+
+      // Also check user profile document joinedClasses just in case
+      try {
+        const userDocRef = doc(db, 'users', studentUid);
+        const userSnap = await getDoc(userDocRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          if (Array.isArray(userData?.joinedClasses)) {
+            userData.joinedClasses.forEach((cid: string) => {
+              if (!classIds.includes(cid)) classIds.push(cid);
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not read user joinedClasses field:', e);
+      }
+    }
+
+    if (classIds.length === 0) {
+      return [];
+    }
+
+    // Firestore 'in' query allows up to 30 elements
+    const assignmentsMap = new Map<string, Assignment>();
+    const chunkSize = 30;
+
+    for (let i = 0; i < classIds.length; i += chunkSize) {
+      const chunk = classIds.slice(i, i + chunkSize);
+      const q = query(
+        collection(db, ASSIGNMENTS_COLLECTION),
+        where('classId', 'in', chunk)
+      );
+      const snap = await getDocs(q);
+      snap.forEach((docSnap) => {
+        assignmentsMap.set(docSnap.id, {
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<Assignment, 'id'>),
+        });
+      });
+    }
+
+    const assignments = Array.from(assignmentsMap.values());
+    // Sort by deadline or createdAt (most urgent/recent first)
+    assignments.sort((a, b) => {
+      if (a.deadline && b.deadline) {
+        return a.deadline.localeCompare(b.deadline);
+      }
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
+
+    return assignments;
+  } catch (err) {
+    console.error('Failed to fetch student assignments:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetch all submissions made by a student
+ */
+export async function fetchStudentSubmissions(
+  studentUid: string
+): Promise<Record<string, AssignmentSubmission>> {
+  if (!studentUid) return {};
+
+  try {
+    const q = query(
+      collection(db, SUBMISSIONS_COLLECTION),
+      where('studentId', '==', studentUid)
+    );
+    const snap = await getDocs(q);
+    const map: Record<string, AssignmentSubmission> = {};
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() as Omit<AssignmentSubmission, 'id'>;
+      map[data.assignmentId] = {
+        id: docSnap.id,
+        ...data,
+      };
+    });
+    return map;
+  } catch (err) {
+    console.error('Failed to fetch student submissions:', err);
+    return {};
+  }
+}
+
+/**
+ * Submit or update a student's submission for an assignment
+ */
+export async function submitStudentAssignment(data: {
+  assignmentId: string;
+  classId: string;
+  studentId: string;
+  studentName: string;
+  studentEmail?: string;
+  content: string;
+  existingSubmissionId?: string;
+}): Promise<AssignmentSubmission> {
+  const now = new Date().toISOString();
+
+  if (data.existingSubmissionId) {
+    // Update existing submission
+    const docRef = doc(db, SUBMISSIONS_COLLECTION, data.existingSubmissionId);
+    await updateDoc(docRef, {
+      content: data.content.trim(),
+      submittedAt: now,
+      status: 'submitted',
+    });
+
+    return {
+      id: data.existingSubmissionId,
+      assignmentId: data.assignmentId,
+      classId: data.classId,
+      studentId: data.studentId,
+      studentName: data.studentName,
+      studentEmail: data.studentEmail,
+      content: data.content.trim(),
+      submittedAt: now,
+      status: 'submitted',
+    };
+  }
+
+  // Create new submission
+  const newSubmission: Omit<AssignmentSubmission, 'id'> = {
+    assignmentId: data.assignmentId,
+    classId: data.classId,
+    studentId: data.studentId,
+    studentName: data.studentName,
+    studentEmail: data.studentEmail || '',
+    submittedAt: now,
+    content: data.content.trim(),
+    status: 'submitted',
+  };
+
+  const docRef = await addDoc(collection(db, SUBMISSIONS_COLLECTION), newSubmission);
+
+  // Increment submissionsCount on assignment document
+  try {
+    const assignmentRef = doc(db, ASSIGNMENTS_COLLECTION, data.assignmentId);
+    await updateDoc(assignmentRef, {
+      submissionsCount: increment(1),
+      updatedAt: now,
+    });
+  } catch (e) {
+    console.warn('Could not increment submissionsCount on assignment:', e);
+  }
+
+  return {
+    id: docRef.id,
+    ...newSubmission,
+  };
+}
+

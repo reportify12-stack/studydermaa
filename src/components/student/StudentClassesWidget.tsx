@@ -14,6 +14,7 @@ import {
   ExternalLink,
   ChevronRight,
   Layers,
+  ClipboardList,
 } from 'lucide-react';
 
 interface StudentClassesWidgetProps {
@@ -72,11 +73,25 @@ export const StudentClassesWidget: React.FC<StudentClassesWidgetProps> = ({
           </div>
         </div>
 
-        {/* Modal Trigger for Joining Class */}
-        <JoinClassSection
-          showModalTriggerOnly
-          onClassJoined={handleClassJoined}
-        />
+        {/* Actions: View Assignments & Join Class */}
+        <div className="flex items-center gap-2">
+          {navigate && (
+            <button
+              id="widget-assignments-link-btn"
+              type="button"
+              onClick={() => navigate('/student-assignments')}
+              className="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <ClipboardList className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Tugasan Saya</span>
+            </button>
+          )}
+
+          <JoinClassSection
+            showModalTriggerOnly
+            onClassJoined={handleClassJoined}
+          />
+        </div>
       </div>
 
       {/* Grid of Enrolled Classes or Empty / Initial State with Join Class Form */}

@@ -17,6 +17,7 @@ import {
   Sun,
   Moon,
   GraduationCap,
+  ClipboardCheck,
 } from 'lucide-react';
 import { StreakBadge } from '../common/StreakBadge';
 import { XpBadge } from '../common/XpBadge';
@@ -220,6 +221,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <User className="w-4 h-4 text-stone-400" />
                       <span>Profil Saya</span>
+                    </button>
+
+                    <button
+                      id="dropdown-assignments-link"
+                      onClick={() => navigate('/student-assignments')}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                    >
+                      <ClipboardCheck className="w-4 h-4 text-emerald-500" />
+                      <span>Tugasan Saya</span>
                     </button>
 
                     <button

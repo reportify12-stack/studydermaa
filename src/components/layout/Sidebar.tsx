@@ -16,6 +16,7 @@ import {
   Globe,
   X,
   Crown,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const studentNavItems = [
     { label: t('nav_home'), path: '/dashboard', icon: Home, id: 'nav-home' },
+    { label: t('nav_assignments', 'Tugasan Saya'), path: '/student-assignments', icon: ClipboardCheck, id: 'nav-assignments', badge: 'Kelas' },
     { label: 'Simulasi PKSK', path: '/pksk', icon: Crown, id: 'nav-pksk', badge: 'VIP' },
     { label: 'Language Hub', path: '/language-hub', icon: Globe, id: 'nav-language-hub', badge: 'AI' },
     { label: t('nav_ai_tutor'), path: '/ai-tutor', icon: Sparkles, id: 'nav-ai-tutor', badge: 'KSSM' },
@@ -67,6 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const Icon = item.icon;
           const isActive =
             currentRoute === item.path ||
+            (item.path === '/student-assignments' && (currentRoute === '/student-assignments' || currentRoute === '/assignments' || currentRoute === '/tugasan')) ||
             (item.path === '/language-hub' && (currentRoute === '/language-hub' || currentRoute === '/languages' || currentRoute === '/bahasa')) ||
             (item.path === '/ai-tutor' && (currentRoute === '/ai-tutor' || currentRoute === '/tutor')) ||
             (item.path === '/seminars' && (currentRoute === '/seminars' || currentRoute === '/seminar' || currentRoute === '/live-seminar')) ||

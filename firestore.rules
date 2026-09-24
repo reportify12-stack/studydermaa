@@ -236,8 +236,14 @@ service cloud.firestore {
       // Teachers and Admins can create assignments for their classes
       allow create: if isSignedIn() && (request.resource.data.teacherId == request.auth.uid || isAdmin());
       
-      // Teachers and Admins can update or delete assignments
-      allow update, delete: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
+      // Teachers and Admins can update/delete assignments, students can update submissionsCount
+      allow update: if isSignedIn() && (
+        resource.data.teacherId == request.auth.uid || 
+        isAdmin() ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['submissionsCount', 'updatedAt'])
+      );
+      
+      allow delete: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
     }
 
     // ====================================================
