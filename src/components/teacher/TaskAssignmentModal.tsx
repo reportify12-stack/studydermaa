@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClassRoom, Assignment } from '../../types';
 import { createAssignment } from '../../services/teacherService';
@@ -17,13 +17,13 @@ export const TaskAssignmentModal: React.FC<TaskAssignmentModalProps> = ({
   isOpen,
   onClose,
   classes,
-  selectedClassId,
+  selectedClassId: initialSelectedClassId,
   teacherId,
   onAssignmentCreated,
 }) => {
   const { t } = useTranslation();
 
-  const [classId, setClassId] = useState<string>(selectedClassId || (classes[0]?.id || ''));
+  const [selectedClassId, setSelectedClassId] = useState<string>(initialSelectedClassId || '');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState(() => {
@@ -40,13 +40,31 @@ export const TaskAssignmentModal: React.FC<TaskAssignmentModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Sync state whenever modal opens or classes / initial selection changes
+  useEffect(() => {
+    if (isOpen) {
+      if (initialSelectedClassId && classes.some((c) => c.id === initialSelectedClassId)) {
+        setSelectedClassId(initialSelectedClassId);
+      } else {
+        setSelectedClassId('');
+      }
+      setErrorMessage(null);
+    }
+  }, [isOpen, initialSelectedClassId, classes]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    const targetClass = classes.find((c) => c.id === classId);
+    // Validate that a class is selected and not empty
+    if (!selectedClassId || selectedClassId.trim() === '') {
+      setErrorMessage(t('error_select_class', 'Sila pilih kelas untuk tugasan ini.'));
+      return;
+    }
+
+    const targetClass = classes.find((c) => c.id === selectedClassId);
     if (!targetClass) {
       setErrorMessage(t('error_select_class', 'Sila pilih kelas untuk tugasan ini.'));
       return;
@@ -146,14 +164,20 @@ export const TaskAssignmentModal: React.FC<TaskAssignmentModalProps> = ({
             </label>
             <select
               id="task-class-select"
-              value={classId}
-              onChange={(e) => setClassId(e.target.value)}
+              value={selectedClassId}
+              onChange={(e) => {
+                setSelectedClassId(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+              }}
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
               required
             >
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.tingkatan} • {c.subject})
+              <option value="" disabled>
+                -- Sila Pilih Kelas --
+              </option>
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} ({cls.tingkatan} • {cls.subject})
                 </option>
               ))}
             </select>

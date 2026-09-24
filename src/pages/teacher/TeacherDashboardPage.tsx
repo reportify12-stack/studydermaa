@@ -243,7 +243,7 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({ navi
               type="button"
               disabled={classes.length === 0}
               onClick={() => {
-                setSelectedClassForTask(classes[0]?.id);
+                setSelectedClassForTask(undefined);
                 setTaskModalOpen(true);
               }}
               className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-500/30 hover:bg-emerald-500/40 text-white border border-white/20 backdrop-blur-md shadow-xs flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
@@ -647,7 +647,7 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({ navi
                   type="button"
                   disabled={classes.length === 0}
                   onClick={() => {
-                    setSelectedClassForTask(classes[0]?.id);
+                    setSelectedClassForTask(undefined);
                     setTaskModalOpen(true);
                   }}
                   className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
@@ -674,7 +674,7 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({ navi
                     type="button"
                     disabled={classes.length === 0}
                     onClick={() => {
-                      setSelectedClassForTask(classes[0]?.id);
+                      setSelectedClassForTask(undefined);
                       setTaskModalOpen(true);
                     }}
                     className="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
