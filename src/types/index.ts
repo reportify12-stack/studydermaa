@@ -56,6 +56,7 @@ export interface UserProfile {
   colorMode?: 'light' | 'dark' | 'system';
   isSuspended?: boolean;
   status?: 'active' | 'suspended';
+  joinedClasses?: string[]; // array of joined classIds
   // PKSK Premium Portal Fields
   pksk_access?: boolean;
   pksk_sekolah_pilihan?: string;

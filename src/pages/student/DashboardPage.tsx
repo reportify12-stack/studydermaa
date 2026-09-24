@@ -9,6 +9,7 @@ import { StreakBadge } from '../../components/common/StreakBadge';
 import { XpBadge } from '../../components/common/XpBadge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { CardSkeleton } from '../../components/common/SkeletonLoader';
+import { StudentClassesWidget } from '../../components/student/StudentClassesWidget';
 import {
   BookOpen,
   HelpCircle,
@@ -273,6 +274,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
+
+      {/* Teacher Classes & Join Class Section */}
+      <StudentClassesWidget navigate={navigate} />
 
       {/* AI Multilingual Language Hub Banner */}
       <div
