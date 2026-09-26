@@ -224,6 +224,26 @@
         "completedAt": { "type": "string" }
       },
       "required": ["uid", "scorePercentage", "totalQuestions", "completedAt"]
+    },
+    "LearningVideo": {
+      "title": "LearningVideo",
+      "description": "KSSM learning video lesson embedded natively from YouTube",
+      "type": "object",
+      "properties": {
+        "subject": { "type": "string" },
+        "chapter": { "type": "string" },
+        "title": { "type": "string" },
+        "youtubeLink": { "type": "string" },
+        "youtubeVideoId": { "type": "string" },
+        "description": { "type": "string" },
+        "tingkatan": { "type": "string" },
+        "order": { "type": "number" },
+        "duration": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["subject", "chapter", "youtubeLink", "youtubeVideoId", "createdAt"]
     }
   },
   "firestore": {
@@ -274,6 +294,10 @@
     "/pkskAttempts/{attemptId}": {
       "schema": "PkskAttempt",
       "description": "Student PKSK simulation attempts"
+    },
+    "/learning_videos/{videoId}": {
+      "schema": "LearningVideo",
+      "description": "Native embedded learning videos by subject and chapter"
     }
   }
 }

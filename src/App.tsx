@@ -27,6 +27,7 @@ import { SettingsPage } from './pages/student/SettingsPage';
 import { SeminarsPage } from './pages/student/SeminarsPage';
 import { AiTutorPage } from './pages/student/AiTutorPage';
 import { LanguageHubPage } from './pages/student/LanguageHubPage';
+import { VideoPembelajaranPage } from './pages/student/VideoPembelajaranPage';
 import { AiTutorWidget } from './components/tutor/AiTutorWidget';
 
 // Pages - Admin
@@ -41,6 +42,7 @@ import { AdminAnnouncementsPage } from './pages/admin/AdminAnnouncementsPage';
 import { AdminStatisticsPage } from './pages/admin/AdminStatisticsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminSeminarsPage } from './pages/admin/AdminSeminarsPage';
+import { AdminLearningVideosPage } from './pages/admin/AdminLearningVideosPage';
 
 // Pages - Teacher Portal
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
@@ -151,6 +153,8 @@ const AppContent: React.FC = () => {
         adminView = <AdminStudentsPage navigate={navigate} />;
       } else if (currentPath === '/admin/subjects') {
         adminView = <AdminSubjectsPage navigate={navigate} />;
+      } else if (currentPath === '/admin/videos' || currentPath.startsWith('/admin/videos')) {
+        adminView = <AdminLearningVideosPage navigate={navigate} />;
       } else if (currentPath === '/admin/notes') {
         adminView = <AdminNotesPage navigate={navigate} />;
       } else if (currentPath === '/admin/quizzes') {
@@ -384,6 +388,12 @@ const AppContent: React.FC = () => {
       currentPath === '/kerja-rumah'
     ) {
       studentView = <StudentAssignmentsPage navigate={navigate} />;
+    } else if (
+      currentPath === '/video-pembelajaran' ||
+      currentPath === '/videos' ||
+      currentPath === '/video'
+    ) {
+      studentView = <VideoPembelajaranPage navigate={navigate} />;
     } else if (currentPath === '/belajar' || currentPath === '/learn') {
       studentView = <BelajarPage navigate={navigate} />;
     } else if (currentPath === '/nota' || currentPath === '/notes') {

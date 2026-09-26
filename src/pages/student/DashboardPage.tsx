@@ -30,6 +30,7 @@ import {
   ShieldAlert,
   Globe,
   Crown,
+  Film,
 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -309,6 +310,41 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
         >
           <Globe className="w-4 h-4" />
           <span>Buka Language Hub</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Video Pembelajaran Feature Card */}
+      <div className="p-6 rounded-3xl border border-rose-200/80 dark:border-rose-900/60 bg-gradient-to-r from-rose-50/80 via-white to-pink-50/60 dark:from-rose-950/40 dark:via-stone-900 dark:to-pink-950/30 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-xs">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <Film className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/80 text-rose-700 dark:text-rose-200">
+                Pemain Native KSSM
+              </span>
+              <span className="text-[10px] font-bold text-stone-400">
+                Bebas Iklan & Tiada Redirect
+              </span>
+            </div>
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 font-display">
+              Video Pembelajaran Mengikut Bab & Subjek
+            </h2>
+            <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5 max-w-xl">
+              Tonton video penerangan konsep daripada guru-guru pakar untuk subjek Matematik, Sains, Sejarah, dan banyak lagi secara teratur mengikut bab.
+            </p>
+          </div>
+        </div>
+
+        <button
+          id="dashboard-launch-learning-videos-btn"
+          onClick={() => navigate('/video-pembelajaran')}
+          className="px-5 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold hover:brightness-105 active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2 shrink-0"
+        >
+          <Film className="w-4 h-4" />
+          <span>Tonton Video Pembelajaran</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

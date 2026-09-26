@@ -13,6 +13,7 @@ import {
   ArrowRight,
   ShieldAlert,
   Flame,
+  Film,
 } from 'lucide-react';
 
 interface AdminOverviewPageProps {
@@ -74,6 +75,14 @@ export const AdminOverviewPage: React.FC<AdminOverviewPageProps> = ({ navigate }
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Kuiz</span>
+          </button>
+          <button
+            id="admin-overview-videos-btn"
+            onClick={() => navigate('/admin/videos')}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 flex items-center gap-1.5 shadow-2xs"
+          >
+            <Film className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>Video Pembelajaran</span>
           </button>
         </div>
       </div>

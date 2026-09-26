@@ -345,6 +345,22 @@ export interface ClassStudent {
   joinedAt?: string;
 }
 
+export interface LearningVideo {
+  id: string;
+  subject: string; // e.g., 'Matematik'
+  chapter: string; // e.g., 'Bab 1' or 'Bab 1: Nombor Nisbah'
+  title?: string; // Optional video title
+  youtubeLink: string; // Original URL provided by admin
+  youtubeVideoId: string; // Extracted 11-char ID
+  description?: string; // Optional summary/notes
+  tingkatan?: TingkatanType | string;
+  order?: number;
+  duration?: string;
+  createdAt: string;
+  updatedAt?: string;
+  createdBy?: string;
+}
+
 export * from './languageHub';
 export * from './pksk';
 

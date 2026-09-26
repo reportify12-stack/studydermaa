@@ -268,5 +268,15 @@ service cloud.firestore {
       allow update: if isSignedIn();
       allow delete: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
     }
+
+    // ====================================================
+    // LEARNING VIDEOS (learning_videos/{videoId})
+    // ====================================================
+    match /learning_videos/{videoId} {
+      // Authenticated students and teachers can read learning videos
+      allow read: if isSignedIn() || isAdmin();
+      // Only admins can create, update, and delete learning videos
+      allow create, update, delete: if isAdmin();
+    }
   }
 }
