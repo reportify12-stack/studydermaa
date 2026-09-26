@@ -151,8 +151,10 @@ export interface Question {
   id: string;
   quizId: string;
   question: string;
+  questionText?: string;
   type: QuestionType;
   options?: string[]; // For objective
+  correctOptionIndex?: number;
   correctAnswer: string | number; // index or text
   marks: number;
   explanation?: string;

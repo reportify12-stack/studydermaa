@@ -95,7 +95,19 @@ export const getQuizQuestions = async (quizId: string): Promise<Question[]> => {
       where('quizId', '==', quizId)
     );
     const snap = await getDocs(q);
-    const questions = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Question));
+    const questions = snap.docs.map((d) => {
+      const data = d.data();
+      const qText = data.questionText || data.question || '';
+      return {
+        id: d.id,
+        ...data,
+        question: qText,
+        questionText: qText,
+        correctOptionIndex: data.correctOptionIndex !== undefined ? data.correctOptionIndex : data.correctAnswer,
+        correctAnswer: data.correctOptionIndex !== undefined ? data.correctOptionIndex : data.correctAnswer,
+      } as Question;
+    });
+
     if (questions.length > 0) {
       return questions.sort((a, b) => (a.order || 0) - (b.order || 0));
     }
@@ -105,17 +117,23 @@ export const getQuizQuestions = async (quizId: string): Promise<Question[]> => {
     if (quizDoc.exists()) {
       const data = quizDoc.data();
       if (Array.isArray(data.questions) && data.questions.length > 0) {
-        return data.questions.map((item: any, idx: number) => ({
-          id: item.id || `q_${quizId}_${idx}`,
-          quizId,
-          question: item.questionText || item.question || '',
-          type: 'objective' as const,
-          options: item.options || [],
-          correctAnswer: item.correctOptionIndex !== undefined ? item.correctOptionIndex : (item.correctAnswer ?? 0),
-          marks: item.marks || 1,
-          order: idx + 1,
-          createdAt: data.createdAt || new Date().toISOString(),
-        }));
+        return data.questions.map((item: any, idx: number) => {
+          const qText = item.questionText || item.question || '';
+          const correctIdx = item.correctOptionIndex !== undefined ? item.correctOptionIndex : (item.correctAnswer ?? 0);
+          return {
+            id: item.id || `q_${quizId}_${idx}`,
+            quizId,
+            question: qText,
+            questionText: qText,
+            type: 'objective' as const,
+            options: item.options || [],
+            correctOptionIndex: correctIdx,
+            correctAnswer: correctIdx,
+            marks: item.marks || 1,
+            order: idx + 1,
+            createdAt: data.createdAt || new Date().toISOString(),
+          };
+        });
       }
     }
 
@@ -206,10 +224,39 @@ export async function submitQuizAttempt(
     let marksEarned = 0;
 
     if (q.type === 'objective') {
-      if (
-        studentAns !== undefined &&
-        String(studentAns).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()
-      ) {
+      const targetCorrect = q.correctOptionIndex !== undefined ? q.correctOptionIndex : q.correctAnswer;
+      const optionLetters = ['A', 'B', 'C', 'D'];
+
+      const studentStr = String(studentAns ?? '').trim().toUpperCase();
+      const correctStr = String(targetCorrect ?? '').trim().toUpperCase();
+
+      const studentAsNum = Number(studentAns);
+      const correctAsNum = Number(targetCorrect);
+
+      let matched = false;
+      if (studentAns !== undefined && studentAns !== '') {
+        if (!isNaN(studentAsNum) && !isNaN(correctAsNum) && studentAsNum === correctAsNum) {
+          matched = true;
+        } else if (studentStr === correctStr) {
+          matched = true;
+        } else if (
+          !isNaN(correctAsNum) &&
+          correctAsNum >= 0 &&
+          correctAsNum < 4 &&
+          studentStr === optionLetters[correctAsNum]
+        ) {
+          matched = true;
+        } else if (
+          !isNaN(studentAsNum) &&
+          studentAsNum >= 0 &&
+          studentAsNum < 4 &&
+          correctStr === optionLetters[studentAsNum]
+        ) {
+          matched = true;
+        }
+      }
+
+      if (matched) {
         isCorrect = true;
         marksEarned = questionMarks;
       }

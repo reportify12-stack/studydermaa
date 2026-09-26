@@ -77,11 +77,11 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
     return () => clearInterval(timer);
   }, [examStarted, attemptResult, timeRemaining]);
 
-  const handleSelectOption = (questionId: string, optionId: string) => {
+  const handleSelectOption = (questionId: string, optionId: string | number) => {
     if (attemptResult) return;
     setUserAnswers((prev) => ({
       ...prev,
-      [questionId]: optionId,
+      [questionId]: String(optionId),
     }));
   };
 
@@ -337,8 +337,17 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
 
         <div className="space-y-6">
           {questions.map((q, idx) => {
-            const userAns = attemptResult.answers[q.id];
-            const isCorrect = q.type === 'objective' ? userAns === q.correctAnswer : true;
+            const answerRecord = attemptResult.answers[q.id];
+            const userAns =
+              typeof answerRecord === 'object' && answerRecord !== null
+                ? answerRecord.studentAnswer
+                : answerRecord;
+            const isCorrect =
+              typeof answerRecord === 'object' && answerRecord !== null && answerRecord.isCorrect !== undefined
+                ? answerRecord.isCorrect
+                : true;
+
+            const optionLetters = ['A', 'B', 'C', 'D'];
 
             return (
               <div
@@ -364,15 +373,26 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
                 </div>
 
                 <p className="text-sm font-bold text-stone-900 dark:text-stone-100 leading-relaxed">
-                  {q.questionText}
+                  {q.questionText || q.question}
                 </p>
 
                 {/* Objective Options Review */}
                 {q.type === 'objective' && q.options && (
                   <div className="space-y-2">
-                    {q.options.map((opt) => {
-                      const isOptionCorrect = opt.id === q.correctAnswer;
-                      const isSelectedByUser = userAns === opt.id;
+                    {q.options.map((option: any, optIndex: number) => {
+                      const optionLabel = optionLetters[optIndex] || String.fromCharCode(65 + optIndex);
+                      const optionText = typeof option === 'string' ? option : (option?.text ?? String(option));
+
+                      const targetCorrect = q.correctOptionIndex !== undefined ? q.correctOptionIndex : q.correctAnswer;
+                      const isOptionCorrect =
+                        targetCorrect === optIndex ||
+                        String(targetCorrect) === String(optIndex) ||
+                        String(targetCorrect).toUpperCase() === optionLabel;
+
+                      const isSelectedByUser =
+                        userAns === optIndex ||
+                        String(userAns) === String(optIndex) ||
+                        String(userAns).toUpperCase() === optionLabel;
 
                       let optStyle =
                         'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/30 text-stone-700 dark:text-stone-300';
@@ -386,14 +406,14 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
 
                       return (
                         <div
-                          key={opt.id}
+                          key={optIndex}
                           className={`p-3 rounded-xl border text-xs flex items-center justify-between ${optStyle}`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center font-bold text-[11px]">
-                              {opt.id}
+                            <span className="w-6 h-6 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center font-bold text-[11px] shrink-0">
+                              {optionLabel}
                             </span>
-                            <span>{opt.text}</span>
+                            <span>{optionText}</span>
                           </div>
                           {isOptionCorrect && (
                             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
@@ -428,6 +448,7 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
 
   // 4. Live Exam Taking View
   const currentQ = questions[currentQIndex];
+  const optionLetters = ['A', 'B', 'C', 'D'];
 
   return (
     <div id="active-exam-container" className="max-w-3xl mx-auto space-y-6 pb-16 animate-fade-in">
@@ -465,25 +486,31 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
               {currentQ.type === 'objective' ? 'Objektif' : currentQ.type === 'kbat' ? 'KBAT' : 'Subjektif'}
             </span>
             <span className="text-xs font-semibold text-stone-400">
-              {currentQ.marks} Markah
+              {currentQ.marks || 1} Markah
             </span>
           </div>
 
           <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 leading-relaxed">
-            {currentQ.questionText}
+            {currentQ.questionText || currentQ.question}
           </h2>
 
           {/* Question Options for Objective */}
           {currentQ.type === 'objective' && currentQ.options && (
             <div className="space-y-3 pt-2">
-              {currentQ.options.map((opt) => {
-                const isSelected = userAnswers[currentQ.id] === opt.id;
+              {currentQ.options.map((option: any, optIndex: number) => {
+                const optionLabel = optionLetters[optIndex] || String.fromCharCode(65 + optIndex);
+                // Ensure text rendered is the mapped string item itself
+                const optionText = typeof option === 'string' ? option : (option?.text ?? String(option));
+                const isSelected =
+                  userAnswers[currentQ.id] === String(optIndex) ||
+                  userAnswers[currentQ.id] === optionLabel;
+
                 return (
                   <button
-                    key={opt.id}
+                    key={optIndex}
                     type="button"
-                    onClick={() => handleSelectOption(currentQ.id, opt.id)}
-                    className={`w-full p-4 rounded-2xl border text-left text-xs sm:text-sm font-medium transition-all flex items-center justify-between ${
+                    onClick={() => handleSelectOption(currentQ.id, optIndex)}
+                    className={`w-full p-4 rounded-2xl border text-left text-xs sm:text-sm font-medium transition-all flex items-center justify-between cursor-pointer ${
                       isSelected
                         ? 'border-theme-primary ring-2 ring-theme-primary/30 bg-theme-surface text-theme-primary font-bold shadow-xs'
                         : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/50 text-stone-800 dark:text-stone-200'
@@ -491,15 +518,15 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
                   >
                     <div className="flex items-center gap-3">
                       <span
-                        className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs ${
+                        className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
                           isSelected
                             ? 'btn-theme-primary text-white'
                             : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300'
                         }`}
                       >
-                        {opt.id}
+                        {optionLabel}
                       </span>
-                      <span>{opt.text}</span>
+                      <span>{optionText}</span>
                     </div>
                   </button>
                 );

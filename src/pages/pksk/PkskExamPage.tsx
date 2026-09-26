@@ -481,7 +481,7 @@ export const PkskExamPage: React.FC<PkskExamPageProps> = ({ navigate }) => {
 
           {/* Question Statement */}
           <div className="text-base sm:text-lg font-bold text-white leading-relaxed">
-            {currentQuestion.question}
+            {currentQuestion.questionText || currentQuestion.question}
           </div>
 
           {/* Options List (A, B, C, D) */}
