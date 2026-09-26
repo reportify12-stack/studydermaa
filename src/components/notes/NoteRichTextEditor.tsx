@@ -32,9 +32,10 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
    * retrieves public download URL, and inserts it at cursor position.
    */
   const handleImageUpload = useCallback(() => {
+    // 1. Create a hidden <input type="file" accept="image/*"> dynamically and trigger click
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/jpeg,image/png,image/webp,image/gif');
+    input.setAttribute('accept', 'image/*');
     input.click();
 
     input.onchange = async () => {
@@ -53,25 +54,25 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
 
       try {
         const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const storagePath = `noteImages/${noteId || 'general'}/${Date.now()}_${cleanFileName}`;
+        // 2. Upload to Firebase Storage under notes_images/
+        const storagePath = `notes_images/${Date.now()}_${cleanFileName}`;
         const fileRef = ref(storage, storagePath);
 
         const snapshot = await uploadBytes(fileRef, file, {
           contentType: file.type,
-          customMetadata: {
-            type: 'note-rich-editor',
-            uploadedAt: new Date().toISOString(),
-          },
         });
 
+        // 3. Retrieve download URL
         const downloadUrl = await getDownloadURL(snapshot.ref);
 
-        // Access underlying Quill instance and insert image at current cursor position
+        // 4. Access the Quill editor instance via React useRef
         const quill = quillRef.current?.getEditor();
         if (quill) {
-          const range = quill.getSelection(true) || { index: quill.getLength(), length: 0 };
-          quill.insertEmbed(range.index, 'image', downloadUrl);
-          quill.setSelection(range.index + 1, 0);
+          // 5. Get current cursor position and insert image directly
+          const selection = quill.getSelection(true);
+          const index = selection ? selection.index : quill.getLength();
+          quill.insertEmbed(index, 'image', downloadUrl);
+          quill.setSelection(index + 1, 0);
         }
 
         setUploadSuccess(true);
@@ -83,7 +84,7 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
         setUploadingImage(false);
       }
     };
-  }, [noteId]);
+  }, []);
 
   // Configure Quill Toolbar & Handlers
   const modules = useMemo(() => {
