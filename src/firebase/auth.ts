@@ -22,6 +22,7 @@ export interface RegisterStudentData {
   username: string;
   password: string;
   tingkatan?: TingkatanType;
+  isDLP?: boolean;
   email?: string;
   school?: string;
   role?: UserRole;
@@ -156,6 +157,7 @@ export const registerStudent = async (data: RegisterStudentData): Promise<UserPr
     authEmail: authEmail,
     school: data.school?.trim() || '',
     ...(data.role !== 'teacher' && data.tingkatan ? { tingkatan: data.tingkatan } : {}),
+    isDLP: Boolean(data.isDLP),
     role: data.role || 'student',
     xp: 0,
     level: 1,
@@ -312,7 +314,7 @@ export const getUserClaims = async (user: FirebaseUser, forceRefresh = false): P
  */
 export const updateUserProfile = async (
   uid: string,
-  data: Partial<Pick<UserProfile, 'fullName' | 'school' | 'tingkatan' | 'themePreference' | 'colorMode'>>
+  data: Partial<Pick<UserProfile, 'fullName' | 'school' | 'tingkatan' | 'themePreference' | 'colorMode' | 'isDLP'>>
 ): Promise<void> => {
   const userDocRef = doc(db, 'users', uid);
   await updateDoc(userDocRef, {

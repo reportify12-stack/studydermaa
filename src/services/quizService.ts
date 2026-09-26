@@ -32,21 +32,25 @@ export { getPublishedSubjects };
 // ==========================================
 
 export const getPublishedQuizzes = async (
-  filtersOrSubjectId?: { subjectId?: string; tingkatan?: TingkatanType } | string,
-  tingkatanParam?: TingkatanType
+  filtersOrSubjectId?: { subjectId?: string; tingkatan?: TingkatanType; isDLP?: boolean } | string,
+  tingkatanParam?: TingkatanType,
+  isDlpParam?: boolean
 ): Promise<Quiz[]> => {
   try {
     let q = query(collection(db, 'quizzes'), where('published', '==', true));
 
     let subjectId: string | undefined;
     let tingkatan: TingkatanType | undefined;
+    let isDLP: boolean | undefined;
 
     if (typeof filtersOrSubjectId === 'string') {
       subjectId = filtersOrSubjectId;
       tingkatan = tingkatanParam;
+      isDLP = isDlpParam;
     } else if (filtersOrSubjectId) {
       subjectId = filtersOrSubjectId.subjectId;
       tingkatan = filtersOrSubjectId.tingkatan;
+      isDLP = filtersOrSubjectId.isDLP;
     }
 
     if (subjectId) {
@@ -54,6 +58,9 @@ export const getPublishedQuizzes = async (
     }
     if (tingkatan) {
       q = query(q, where('tingkatan', '==', tingkatan));
+    }
+    if (isDLP !== undefined) {
+      q = query(q, where('isDLP', '==', isDLP));
     }
 
     const snap = await getDocs(q);

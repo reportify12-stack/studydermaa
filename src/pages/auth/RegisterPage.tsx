@@ -15,6 +15,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [tingkatan, setTingkatan] = useState<TingkatanType>('Tingkatan 1');
+  const [isDLP, setIsDLP] = useState(false);
   const [school, setSchool] = useState('');
   const [selectedRole, setSelectedRole] = useState<'student' | 'teacher'>('student');
 
@@ -54,7 +55,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
         username,
         email: email.trim() || undefined,
         password,
-        ...(selectedRole === 'student' ? { tingkatan } : {}),
+        ...(selectedRole === 'student' ? { tingkatan, isDLP } : {}),
         school: school.trim() || undefined,
         role: selectedRole,
       });
@@ -249,6 +250,30 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ navigate }) => {
                   placeholder="cth: SMK Derma"
                   className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-800/40 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all placeholder:text-stone-400"
                 />
+              </div>
+
+              {/* Dual Language Programme (DLP) Toggle */}
+              <div className="sm:col-span-2 p-3.5 rounded-2xl border border-sky-200/90 dark:border-sky-800/70 bg-sky-50/60 dark:bg-sky-950/30">
+                <label htmlFor="register-dlp-toggle" className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="register-dlp-toggle"
+                    checked={isDLP}
+                    onChange={(e) => setIsDLP(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-stone-300 dark:border-stone-600 accent-sky-600 cursor-pointer"
+                  />
+                  <div className="text-xs">
+                    <div className="flex items-center gap-2 font-bold text-sky-950 dark:text-sky-100">
+                      <span>Program DwiBahasa (Dual Language Programme - DLP)</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-sky-100 dark:bg-sky-900/80 text-sky-700 dark:text-sky-300 font-black">
+                        English
+                      </span>
+                    </div>
+                    <p className="text-stone-600 dark:text-stone-400 text-[11px] mt-0.5 leading-relaxed">
+                      Tandakan jika anda mengikuti kelas DLP bagi subjek <strong>Matematik</strong> dan <strong>Sains</strong> (pembelajaran & latihan dalam Bahasa Inggeris).
+                    </p>
+                  </div>
+                </label>
               </div>
             </div>
           ) : (

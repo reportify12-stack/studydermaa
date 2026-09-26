@@ -34,6 +34,13 @@ export const KSSM_DEFAULT_SUBJECTS = [
   { name: 'Muzik', code: 'MZ', icon: 'Music', category: 'Wajib' },
 ];
 
+export const DLP_SUBJECTS = ['Matematik', 'Sains'] as const;
+export type DlpSubjectName = (typeof DLP_SUBJECTS)[number];
+export const isDlpEligibleSubject = (name?: string): boolean => {
+  if (!name) return false;
+  return name === 'Matematik' || name === 'Sains';
+};
+
 export interface UserProfile {
   uid: string;
   username: string;
@@ -43,6 +50,7 @@ export interface UserProfile {
   authEmail: string;
   school?: string;
   tingkatan?: TingkatanType;
+  isDLP?: boolean; // Dual Language Programme status (Matematik & Sains in English)
   role: UserRole;
   xp: number;
   level: number;
@@ -125,6 +133,7 @@ export interface Note {
   topicId?: string;
   topicTitle?: string;
   tingkatan: TingkatanType;
+  isDLP?: boolean; // Versi DLP (English) for Matematik & Sains
   title: string;
   summary: string;
   content: string; // Markdown or structured sections
@@ -159,6 +168,7 @@ export interface Quiz {
   chapterId?: string;
   chapterTitle?: string;
   tingkatan: TingkatanType;
+  isDLP?: boolean; // Versi DLP (English) for Matematik & Sains
   title: string;
   description: string;
   durationMinutes: number;

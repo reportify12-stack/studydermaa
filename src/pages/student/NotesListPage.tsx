@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getPublishedNotes, getPublishedSubjects, getAllUserNoteProgress } from '../../services/contentService';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase/config';
+import { getPublishedSubjects, getAllUserNoteProgress } from '../../services/contentService';
 import { useAuth } from '../../contexts/AuthContext';
 import { Note, Subject, TingkatanType, TINGKATAN_OPTIONS, UserNoteProgress } from '../../types';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -12,6 +14,7 @@ import {
   Clock,
   ArrowRight,
   Sparkles,
+  Globe,
 } from 'lucide-react';
 
 interface NotesListPageProps {
@@ -43,15 +46,48 @@ export const NotesListPage: React.FC<NotesListPageProps> = ({ navigate }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [subList, noteList] = await Promise.all([
-          getPublishedSubjects(),
-          getPublishedNotes({
-            subjectId: selectedSubjectId === 'all' ? undefined : selectedSubjectId,
-            tingkatan: selectedTingkatan === 'all' ? undefined : (selectedTingkatan as TingkatanType),
-            searchQuery: searchTerm,
-          }),
-        ]);
+        const subList = await getPublishedSubjects();
         setSubjects(subList);
+
+        // Identify current subject
+        const selectedSubject = subList.find((s) => s.id === selectedSubjectId);
+        const subjectName = selectedSubject?.name || '';
+        const isDlpSubject = subjectName === 'Matematik' || subjectName === 'Sains';
+
+        // Base Firestore query
+        let notesQuery = query(collection(db, 'notes'), where('published', '==', true));
+
+        if (selectedSubjectId !== 'all') {
+          notesQuery = query(notesQuery, where('subjectId', '==', selectedSubjectId));
+        }
+
+        if (selectedTingkatan !== 'all') {
+          notesQuery = query(notesQuery, where('tingkatan', '==', selectedTingkatan));
+        }
+
+        // Strict Dual Language Programme (DLP) filtering:
+        // If the selected subject is 'Matematik' or 'Sains', apply a filter: where('isDLP', '==', currentUserProfile.isDLP)
+        // If it's any other subject, skip the DLP filter.
+        if (isDlpSubject) {
+          const currentUserIsDLP = Boolean(userProfile?.isDLP);
+          notesQuery = query(notesQuery, where('isDLP', '==', currentUserIsDLP));
+        }
+
+        const snap = await getDocs(notesQuery);
+        let noteList = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Note));
+
+        // Client-side text search filtering
+        if (searchTerm.trim().length > 0) {
+          const sq = searchTerm.trim().toLowerCase();
+          noteList = noteList.filter(
+            (n) =>
+              n.title.toLowerCase().includes(sq) ||
+              n.summary.toLowerCase().includes(sq) ||
+              n.subjectName.toLowerCase().includes(sq) ||
+              (n.keyPoints && n.keyPoints.some((kp) => kp.toLowerCase().includes(sq)))
+          );
+        }
+
         setNotes(noteList);
 
         if (userProfile) {
@@ -66,7 +102,7 @@ export const NotesListPage: React.FC<NotesListPageProps> = ({ navigate }) => {
     };
 
     fetchData();
-  }, [selectedSubjectId, selectedTingkatan, searchTerm, userProfile]);
+  }, [selectedSubjectId, selectedTingkatan, searchTerm, userProfile?.isDLP, userProfile?.uid]);
 
   return (
     <div id="notes-list-page" className="space-y-6 pb-12 animate-fade-in">
@@ -124,6 +160,39 @@ export const NotesListPage: React.FC<NotesListPageProps> = ({ navigate }) => {
             ))}
           </select>
         </div>
+
+        {/* DLP Subject Notification Banner */}
+        {(() => {
+          const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+          const isDlp = selectedSubject?.name === 'Matematik' || selectedSubject?.name === 'Sains';
+          if (!isDlp) return null;
+
+          return (
+            <div className="mt-4 p-3.5 rounded-2xl border border-sky-200/90 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                <div>
+                  <span className="font-bold text-sky-950 dark:text-sky-100">
+                    Penapisan Program DwiBahasa (DLP) Aktif:
+                  </span>{' '}
+                  <span className="text-stone-600 dark:text-stone-300">
+                    Memaparkan nota {selectedSubject?.name} versi{' '}
+                    <strong className="text-sky-700 dark:text-sky-300 font-black">
+                      {userProfile?.isDLP ? 'Bahasa Inggeris (DLP)' : 'Bahasa Melayu (Bukan DLP)'}
+                    </strong>{' '}
+                    mengikut tetapan profil anda.
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/settings')}
+                className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline shrink-0 text-left sm:text-right"
+              >
+                Ubah Tetapan DLP &rarr;
+              </button>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Notes Grid */}
@@ -153,9 +222,16 @@ export const NotesListPage: React.FC<NotesListPageProps> = ({ navigate }) => {
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-theme-surface text-theme-primary border border-theme-primary/20">
-                      {note.subjectName}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-theme-surface text-theme-primary border border-theme-primary/20">
+                        {note.subjectName}
+                      </span>
+                      {note.isDLP && (
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
+                          DLP
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[11px] font-semibold text-stone-400">
                       {note.tingkatan}
                     </span>

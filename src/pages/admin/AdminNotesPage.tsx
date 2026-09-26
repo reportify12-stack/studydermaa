@@ -49,6 +49,7 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
   const [keyPointsInput, setKeyPointsInput] = useState('');
   const [readTimeMinutes, setReadTimeMinutes] = useState(5);
   const [published, setPublished] = useState(true);
+  const [isDLP, setIsDLP] = useState(false);
 
   const fetchNotesAndSubjects = async () => {
     setLoading(true);
@@ -81,6 +82,7 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
     setKeyPointsInput('');
     setReadTimeMinutes(5);
     setPublished(true);
+    setIsDLP(false);
     setModalOpen(true);
   };
 
@@ -95,6 +97,7 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
     setKeyPointsInput((n.keyPoints || []).join('\n'));
     setReadTimeMinutes(n.readTimeMinutes || 5);
     setPublished(n.published);
+    setIsDLP(Boolean(n.isDLP));
     setModalOpen(true);
   };
 
@@ -102,6 +105,9 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
     e.preventDefault();
     const selSubject = subjects.find((s) => s.id === subjectId);
     if (!title.trim() || !content.trim() || !subjectId) return;
+
+    const currentSubjectName = selSubject?.name || '';
+    const isDlpEligible = currentSubjectName === 'Matematik' || currentSubjectName === 'Sains';
 
     setSaving(true);
     try {
@@ -116,6 +122,7 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
         subjectId,
         subjectName: selSubject?.name || 'KSSM',
         tingkatan,
+        isDLP: isDlpEligible ? Boolean(isDLP) : false,
         chapterTitle: chapterTitle.trim(),
         summary: summary.trim(),
         content: content.trim(),
@@ -238,7 +245,14 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-theme-primary">{note.subjectName}</div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-theme-primary">{note.subjectName}</span>
+                        {note.isDLP && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
+                            DLP
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[11px] text-stone-400">{note.tingkatan}</div>
                     </td>
 
@@ -371,6 +385,42 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
                   />
                 </div>
               </div>
+
+              {/* Conditional DLP Toggle (Only for Matematik and Sains) */}
+              {(() => {
+                const currentSubject = subjects.find((s) => s.id === subjectId);
+                const currentSubjectName = currentSubject?.name || '';
+                const isDlpEligible = currentSubjectName === 'Matematik' || currentSubjectName === 'Sains';
+                if (!isDlpEligible) return null;
+
+                return (
+                  <div className="p-3.5 rounded-2xl border border-sky-200/90 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-950/30 flex items-center justify-between gap-4 animate-fade-in">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-sky-950 dark:text-sky-100">
+                          Versi DLP (English)
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-sky-200 dark:bg-sky-900 text-sky-800 dark:text-sky-200 font-extrabold uppercase tracking-wide">
+                          Dual Language
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
+                        Aktifkan suis ini jika kandungan nota disediakan dalam Bahasa Inggeris untuk kelas DLP ({currentSubjectName}).
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        id="note-dlp-toggle"
+                        checked={isDLP}
+                        onChange={(e) => setIsDLP(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer dark:bg-stone-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+                    </label>
+                  </div>
+                );
+              })()}
 
               <div>
                 <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">

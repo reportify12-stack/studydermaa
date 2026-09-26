@@ -105,6 +105,7 @@ export const getPublishedNotes = async (filters?: {
   tingkatan?: TingkatanType;
   chapterId?: string;
   searchQuery?: string;
+  isDLP?: boolean;
 }): Promise<Note[]> => {
   try {
     let q = query(collection(db, 'notes'), where('published', '==', true));
@@ -117,6 +118,9 @@ export const getPublishedNotes = async (filters?: {
     }
     if (filters?.chapterId) {
       q = query(q, where('chapterId', '==', filters.chapterId));
+    }
+    if (filters?.isDLP !== undefined) {
+      q = query(q, where('isDLP', '==', filters.isDLP));
     }
 
     const snap = await getDocs(q);

@@ -29,6 +29,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ navigate }) => {
   const [fullName, setFullName] = useState(userProfile?.fullName || '');
   const [tingkatan, setTingkatan] = useState<TingkatanType>(userProfile?.tingkatan || 'Tingkatan 1');
   const [school, setSchool] = useState(userProfile?.school || '');
+  const [isDLP, setIsDLP] = useState<boolean>(Boolean(userProfile?.isDLP));
 
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ navigate }) => {
         fullName: fullName.trim(),
         tingkatan,
         school: school.trim() || undefined,
+        isDLP,
       });
       await refreshProfile();
       setSuccessMsg('Profil berjaya dikemas kini!');
@@ -218,6 +220,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ navigate }) => {
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary transition-all"
             />
           </div>
+        </div>
+
+        {/* Dual Language Programme (DLP) Toggle */}
+        <div className="p-4 rounded-2xl border border-sky-200/80 dark:border-sky-800/80 bg-sky-50/50 dark:bg-sky-950/20">
+          <label htmlFor="profile-dlp-toggle" className="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              id="profile-dlp-toggle"
+              checked={isDLP}
+              onChange={(e) => setIsDLP(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-stone-300 dark:border-stone-600 accent-sky-600 cursor-pointer"
+            />
+            <div className="text-xs">
+              <div className="flex items-center gap-2 font-bold text-sky-950 dark:text-sky-100">
+                <span>Program DwiBahasa (Dual Language Programme - DLP)</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-sky-100 dark:bg-sky-900/80 text-sky-700 dark:text-sky-300 font-black">
+                  English
+                </span>
+              </div>
+              <p className="text-stone-600 dark:text-stone-400 text-[11px] mt-0.5 leading-relaxed">
+                Tandakan jika anda mengikuti kelas DLP bagi subjek <strong>Matematik</strong> dan <strong>Sains</strong> (kandungan nota dan kuiz akan dipaparkan dalam Bahasa Inggeris).
+              </p>
+            </div>
+          </label>
         </div>
 
         <div className="pt-4">
