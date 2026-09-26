@@ -28,6 +28,7 @@ import { SeminarsPage } from './pages/student/SeminarsPage';
 import { AiTutorPage } from './pages/student/AiTutorPage';
 import { LanguageHubPage } from './pages/student/LanguageHubPage';
 import { VideoPembelajaranPage } from './pages/student/VideoPembelajaranPage';
+import { StudentPlannerPage } from './pages/student/StudentPlannerPage';
 import { AiTutorWidget } from './components/tutor/AiTutorWidget';
 
 // Pages - Admin
@@ -382,6 +383,12 @@ const AppContent: React.FC = () => {
     // Student Views with Standard Layout
     let studentView = <DashboardPage navigate={navigate} />;
     if (
+      currentPath === '/planner' ||
+      currentPath === '/student-planner' ||
+      currentPath === '/jadual'
+    ) {
+      studentView = <StudentPlannerPage navigate={navigate} />;
+    } else if (
       currentPath === '/student-assignments' ||
       currentPath === '/assignments' ||
       currentPath === '/tugasan' ||

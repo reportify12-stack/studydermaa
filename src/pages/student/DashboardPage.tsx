@@ -31,6 +31,7 @@ import {
   Globe,
   Crown,
   Film,
+  CalendarDays,
 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -141,7 +142,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            id="dashboard-planner-btn"
+            onClick={() => navigate('/planner')}
+            className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-theme-surface text-theme-primary border border-theme-primary/40 hover:bg-theme-surface/80 transition-colors shadow-2xs flex items-center gap-2 cursor-pointer"
+          >
+            <CalendarDays className="w-4 h-4 text-theme-primary" />
+            <span>Student Planner</span>
+          </button>
           <button
             id="dashboard-explore-notes-btn"
             onClick={() => navigate('/nota')}
