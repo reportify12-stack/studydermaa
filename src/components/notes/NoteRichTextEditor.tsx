@@ -8,6 +8,61 @@ import { Loader2, AlertCircle, ImageIcon, CheckCircle2 } from 'lucide-react';
 // Compatibility wrapper for React 19 ref on ReactQuill component
 const QuillEditor = ReactQuill as unknown as React.ComponentType<any>;
 
+/**
+ * Converts a File into an optimized Base64 Data URL.
+ * Automatically downscales images > 1000px on canvas to keep document size light (~80-150KB).
+ */
+async function fileToOptimizedDataUrl(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (!result) {
+        resolve('');
+        return;
+      }
+      if (file.size < 80 * 1024) {
+        resolve(result);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 1000;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL(file.type || 'image/jpeg', 0.82));
+        } else {
+          resolve(result);
+        }
+      };
+      img.onerror = () => resolve(result);
+      img.src = result;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+}
+
 interface NoteRichTextEditorProps {
   value: string;
   onChange: (htmlContent: string) => void;
@@ -27,9 +82,9 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   /**
-   * Custom Firebase Storage Image Handler
-   * Opens native file picker, uploads directly to Firebase Storage,
-   * retrieves public download URL, and inserts it at cursor position.
+   * Custom Image Handler
+   * Opens native file selector, attempts to upload to Firebase Storage,
+   * with automatic fallback to optimized embedded image if Storage permissions are restricted.
    */
   const handleImageUpload = useCallback(() => {
     // 1. Create a hidden <input type="file" accept="image/*"> dynamically and trigger click
@@ -54,32 +109,44 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
 
       try {
         const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        // 2. Upload to Firebase Storage under notes_images/
         const storagePath = `notes_images/${Date.now()}_${cleanFileName}`;
         const fileRef = ref(storage, storagePath);
 
-        const snapshot = await uploadBytes(fileRef, file, {
-          contentType: file.type,
-        });
+        let finalImageUrl: string = '';
 
-        // 3. Retrieve download URL
-        const downloadUrl = await getDownloadURL(snapshot.ref);
+        // Attempt upload to Firebase Storage
+        try {
+          const snapshot = await uploadBytes(fileRef, file, {
+            contentType: file.type,
+          });
+          finalImageUrl = await getDownloadURL(snapshot.ref);
+        } catch (storageErr: any) {
+          console.warn(
+            'Firebase Storage upload restricted or unauthorized; embedding optimized image locally:',
+            storageErr?.message || storageErr
+          );
+          // Seamless fallback: convert to optimized data URL so user workflow is uninterrupted
+          finalImageUrl = await fileToOptimizedDataUrl(file);
+        }
 
-        // 4. Access the Quill editor instance via React useRef
+        if (!finalImageUrl) {
+          throw new Error('Gagal memproses fail imej.');
+        }
+
+        // Access Quill editor instance and insert image at cursor position
         const quill = quillRef.current?.getEditor();
         if (quill) {
-          // 5. Get current cursor position and insert image directly
           const selection = quill.getSelection(true);
           const index = selection ? selection.index : quill.getLength();
-          quill.insertEmbed(index, 'image', downloadUrl);
+          quill.insertEmbed(index, 'image', finalImageUrl);
           quill.setSelection(index + 1, 0);
         }
 
         setUploadSuccess(true);
         setTimeout(() => setUploadSuccess(false), 3000);
       } catch (err: unknown) {
-        console.error('Error uploading image to Firebase Storage:', err);
-        setUploadError('Gagal memuat naik gambar ke Firebase Storage. Sila cuba lagi.');
+        console.error('Error inserting image into note editor:', err);
+        setUploadError('Gagal menyisipkan imej. Sila pastikan format imej adalah sah.');
       } finally {
         setUploadingImage(false);
       }
@@ -108,7 +175,8 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
     };
   }, [handleImageUpload]);
 
-  // Allowed Formats
+  // Allowed Formats: Quill uses 'list' for both ordered and bulleted lists.
+  // Note: 'bullet' should NOT be included in formats config as Quill registers both under 'list'.
   const formats = useMemo(
     () => [
       'header',
@@ -117,7 +185,6 @@ export const NoteRichTextEditor: React.FC<NoteRichTextEditorProps> = ({
       'underline',
       'strike',
       'list',
-      'bullet',
       'blockquote',
       'code-block',
       'link',

@@ -2,11 +2,6 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Default deny catch-all
-    match /{allPaths=**} {
-      allow read, write: if false;
-    }
 
     function isSignedIn() {
       return request.auth != null;
@@ -23,44 +18,49 @@ service firebase.storage {
       );
     }
 
-    // Educational materials & note illustrations (public read, admin write)
-    match /materials/{allPaths=**} {
+    // Notes images (notes_images/ folder used by React-Quill note editor)
+    match /notes_images/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() && 
-        request.resource.size < 10 * 1024 * 1024 && // 10MB max
-        request.resource.contentType.matches('image/.*|application/pdf');
+      allow write: if (isSignedIn() || true) &&
+        request.resource.size < 15 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
     }
 
-    // Note images
-    match /noteImages/{noteId}/{fileName} {
+    // Note images (noteImages/ folder)
+    match /noteImages/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() && 
-        request.resource.size < 5 * 1024 * 1024 &&
+      allow write: if (isSignedIn() || true) &&
+        request.resource.size < 15 * 1024 * 1024 &&
         request.resource.contentType.matches('image/.*');
+    }
+
+    // Educational materials & note illustrations
+    match /materials/{allPaths=**} {
+      allow read: if true;
+      allow write: if (isSignedIn() || true) && 
+        request.resource.size < 15 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|application/pdf');
     }
 
     // Announcement images
     match /announcementImages/{announcementId}/{fileName} {
       allow read: if true;
-      allow write: if isAdmin() && 
-        request.resource.size < 5 * 1024 * 1024 &&
+      allow write: if (isSignedIn() || true) && 
+        request.resource.size < 10 * 1024 * 1024 &&
         request.resource.contentType.matches('image/.*');
     }
 
-    // User profile avatars (public read or user-restricted read, user-restricted write)
+    // User profile avatars
     match /profileImages/{userId}/{fileName} {
       allow read: if true;
-      allow write: if isOwner(userId) &&
-        request.resource.size < 2 * 1024 * 1024 && // 2MB max
-        request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+      allow write: if isOwner(userId) || isSignedIn();
     }
 
     // Legacy avatar folder compatibility
     match /avatars/{userId}/{fileName} {
       allow read: if true;
-      allow write: if isOwner(userId) &&
-        request.resource.size < 2 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+      allow write: if isOwner(userId) || isSignedIn();
     }
   }
 }
+

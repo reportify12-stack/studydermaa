@@ -307,31 +307,44 @@ export const getAdminQuizzes = async (): Promise<Quiz[]> => {
   }
 };
 
-export const saveQuiz = async (data: Partial<Quiz> & { id?: string }): Promise<void> => {
+export const saveQuiz = async (data: Partial<Quiz> & { id?: string }): Promise<string> => {
   const now = new Date().toISOString();
+  const qList = data.questions || [];
+  const calculatedQuestionCount = qList.length > 0 ? qList.length : (data.questionCount || 0);
+
   if (data.id) {
     const docRef = doc(db, 'quizzes', data.id);
     await updateDoc(docRef, {
       ...data,
+      chapter: data.chapter || data.chapterTitle || '',
+      chapterTitle: data.chapter || data.chapterTitle || '',
+      questionCount: calculatedQuestionCount,
+      totalQuestions: calculatedQuestionCount,
       updatedAt: now,
     });
+    return data.id;
   } else {
     const payload = {
       title: data.title || '',
       subjectId: data.subjectId || '',
       subjectName: data.subjectName || '',
+      chapter: data.chapter || data.chapterTitle || '',
+      chapterTitle: data.chapter || data.chapterTitle || '',
       tingkatan: data.tingkatan || 'Tingkatan 1',
       isDLP: Boolean(data.isDLP),
       description: data.description || '',
       durationMinutes: data.durationMinutes || 15,
-      totalMarks: data.totalMarks || 20,
-      questionCount: 0,
+      totalMarks: data.totalMarks || (qList.length > 0 ? qList.length : 20),
+      questionCount: calculatedQuestionCount,
+      totalQuestions: calculatedQuestionCount,
       passPercentage: data.passPercentage || 50,
       published: data.published ?? true,
+      questions: qList,
       createdAt: now,
       updatedAt: now,
     };
-    await addDoc(collection(db, 'quizzes'), payload);
+    const docRef = await addDoc(collection(db, 'quizzes'), payload);
+    return docRef.id;
   }
 };
 

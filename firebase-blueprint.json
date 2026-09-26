@@ -122,6 +122,8 @@
         "title": { "type": "string" },
         "subjectId": { "type": "string" },
         "subjectName": { "type": "string" },
+        "chapter": { "type": "string" },
+        "chapterTitle": { "type": "string" },
         "tingkatan": { "type": "string" },
         "isDLP": { "type": "boolean" },
         "description": { "type": "string" },
@@ -130,6 +132,7 @@
         "questionCount": { "type": "number" },
         "passPercentage": { "type": "number" },
         "published": { "type": "boolean" },
+        "questions": { "type": "array" },
         "createdAt": { "type": "string" },
         "updatedAt": { "type": "string" }
       },

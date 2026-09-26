@@ -161,10 +161,17 @@ export interface Question {
   createdAt: string;
 }
 
+export interface QuizQuestionItem {
+  questionText: string;
+  options: string[];
+  correctOptionIndex: number;
+}
+
 export interface Quiz {
   id: string;
   subjectId: string;
   subjectName: string;
+  chapter?: string;
   chapterId?: string;
   chapterTitle?: string;
   tingkatan: TingkatanType;
@@ -174,8 +181,10 @@ export interface Quiz {
   durationMinutes: number;
   totalMarks: number;
   questionCount: number;
+  totalQuestions?: number;
   passPercentage: number;
   published: boolean;
+  questions?: QuizQuestionItem[];
   createdAt: string;
   updatedAt: string;
 }

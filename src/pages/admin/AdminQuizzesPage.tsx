@@ -2,23 +2,20 @@ import React, { useState, useEffect } from 'react';
 import {
   getAdminQuizzes,
   getAdminSubjects,
-  saveQuiz,
   deleteQuiz,
 } from '../../services/adminService';
-import { Quiz, Subject, TingkatanType, TINGKATAN_OPTIONS } from '../../types';
+import { Quiz, Subject } from '../../types';
 import { TableSkeleton } from '../../components/common/SkeletonLoader';
 import { EmptyState } from '../../components/common/EmptyState';
+import { BinaKuizForm } from '../../components/admin/BinaKuizForm';
 import {
   HelpCircle,
   Plus,
   Edit2,
   Trash2,
-  X,
   ListOrdered,
   Search,
-  Eye,
-  Clock,
-  Award,
+  BookOpen,
 } from 'lucide-react';
 
 interface AdminQuizzesPageProps {
@@ -36,18 +33,7 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
 
   // Modal / Form state
   const [modalOpen, setModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-
-  const [title, setTitle] = useState('');
-  const [subjectId, setSubjectId] = useState('');
-  const [tingkatan, setTingkatan] = useState<TingkatanType>('Tingkatan 1');
-  const [description, setDescription] = useState('');
-  const [durationMinutes, setDurationMinutes] = useState(15);
-  const [totalMarks, setTotalMarks] = useState(20);
-  const [passPercentage, setPassPercentage] = useState(50);
-  const [published, setPublished] = useState(true);
-  const [isDLP, setIsDLP] = useState(false);
+  const [selectedQuizForEdit, setSelectedQuizForEdit] = useState<Quiz | null>(null);
 
   const fetchQuizzesAndSubjects = async () => {
     setLoading(true);
@@ -55,9 +41,6 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
       const [qList, sList] = await Promise.all([getAdminQuizzes(), getAdminSubjects()]);
       setQuizzes(qList);
       setSubjects(sList);
-      if (sList.length > 0 && !subjectId) {
-        setSubjectId(sList[0].id);
-      }
     } catch (err) {
       console.error('Error fetching quizzes:', err);
     } finally {
@@ -70,64 +53,13 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
   }, []);
 
   const handleOpenAdd = () => {
-    setEditId(null);
-    setTitle('');
-    setSubjectId(subjects.length > 0 ? subjects[0].id : '');
-    setTingkatan('Tingkatan 1');
-    setDescription('');
-    setDurationMinutes(15);
-    setTotalMarks(20);
-    setPassPercentage(50);
-    setPublished(true);
-    setIsDLP(false);
+    setSelectedQuizForEdit(null);
     setModalOpen(true);
   };
 
   const handleOpenEdit = (q: Quiz) => {
-    setEditId(q.id);
-    setTitle(q.title);
-    setSubjectId(q.subjectId);
-    setTingkatan(q.tingkatan);
-    setDescription(q.description || '');
-    setDurationMinutes(q.durationMinutes);
-    setTotalMarks(q.totalMarks);
-    setPassPercentage(q.passPercentage);
-    setPublished(q.published);
-    setIsDLP(Boolean(q.isDLP));
+    setSelectedQuizForEdit(q);
     setModalOpen(true);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const selSubject = subjects.find((s) => s.id === subjectId);
-    if (!title.trim() || !subjectId) return;
-
-    const currentSubjectName = selSubject?.name || '';
-    const isDlpEligible = currentSubjectName === 'Matematik' || currentSubjectName === 'Sains';
-
-    setSaving(true);
-    try {
-      await saveQuiz({
-        id: editId || undefined,
-        title: title.trim(),
-        subjectId,
-        subjectName: selSubject?.name || 'KSSM',
-        tingkatan,
-        isDLP: isDlpEligible ? Boolean(isDLP) : false,
-        description: description.trim(),
-        durationMinutes: Number(durationMinutes) || 15,
-        totalMarks: Number(totalMarks) || 20,
-        passPercentage: Number(passPercentage) || 50,
-        published,
-      });
-
-      setModalOpen(false);
-      await fetchQuizzesAndSubjects();
-    } catch (err) {
-      console.error('Error saving quiz:', err);
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleDelete = async (id: string, qTitle: string) => {
@@ -147,6 +79,7 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
       !sq ||
       q.title.toLowerCase().includes(sq) ||
       q.subjectName.toLowerCase().includes(sq) ||
+      (q.chapter && q.chapter.toLowerCase().includes(sq)) ||
       (q.description && q.description.toLowerCase().includes(sq));
     return matchesSubject && matchesSearch;
   });
@@ -160,16 +93,16 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
             Pengurusan Kuiz Latihan
           </h1>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-            Konfigurasi set soalan kuiz, tempoh masa ujian, dan peratusan kelulusan.
+            Konfigurasi set soalan kuiz, mata pelajaran, bab, dan soalan objektif murid.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="px-4 py-2 rounded-xl text-xs font-bold btn-theme-primary shadow-xs flex items-center gap-1.5"
+          className="px-4 py-2 rounded-xl text-xs font-bold btn-theme-primary shadow-xs flex items-center gap-1.5 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Tambah Kuiz Baharu</span>
+          <span>Bina Kuiz Baharu</span>
         </button>
       </div>
 
@@ -180,7 +113,7 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari tajuk kuiz..."
+            placeholder="Cari tajuk kuiz atau bab..."
             className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary transition-all"
           />
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
@@ -206,9 +139,9 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
       ) : filteredQuizzes.length === 0 ? (
         <EmptyState
           title="Belum ada kuiz didaftarkan."
-          description="Cipta kuiz pertama anda dan masukkan soalan ke dalam Bank Soalan."
+          description="Cipta kuiz pertama anda dengan soalan objektif interaktif."
           icon={HelpCircle}
-          actionText="Tambah Kuiz Baharu"
+          actionText="Bina Kuiz Baharu"
           onAction={handleOpenAdd}
         />
       ) : (
@@ -218,7 +151,7 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
               <thead>
                 <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 text-stone-500 font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3.5 px-4 sm:px-6">Tajuk Kuiz</th>
-                  <th className="py-3.5 px-4">Subjek / Tingkatan</th>
+                  <th className="py-3.5 px-4">Subjek / Bab</th>
                   <th className="py-3.5 px-4 text-center">Soalan</th>
                   <th className="py-3.5 px-4 text-center">Tempoh</th>
                   <th className="py-3.5 px-4 text-center">Lulus</th>
@@ -232,7 +165,7 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
                     <td className="py-3.5 px-4 sm:px-6 font-semibold">
                       <div className="text-stone-900 dark:text-stone-100">{quiz.title}</div>
                       <div className="text-[11px] text-stone-400 line-clamp-1 max-w-xs">
-                        {quiz.description || 'Tiada deskripsi'}
+                        {quiz.description || 'Tiada arahan tambahan'}
                       </div>
                     </td>
 
@@ -245,11 +178,23 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-stone-400">{quiz.tingkatan}</div>
+                      <div className="text-[11px] text-stone-400 flex items-center gap-1">
+                        <span>{quiz.tingkatan}</span>
+                        {(quiz.chapter || quiz.chapterTitle) && (
+                          <>
+                            <span>&bull;</span>
+                            <span className="text-stone-500 dark:text-stone-300 font-medium">
+                              {quiz.chapter || quiz.chapterTitle}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4 text-center font-bold">
-                      {quiz.totalQuestions || 0}
+                      <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200">
+                        {quiz.questions ? quiz.questions.length : quiz.questionCount || quiz.totalQuestions || 0}
+                      </span>
                     </td>
 
                     <td className="py-3.5 px-4 text-center font-medium text-stone-500">
@@ -276,23 +221,23 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
                       {/* Bank Soalan link */}
                       <button
                         onClick={() => navigate(`/admin/questions?quizId=${quiz.id}`)}
-                        className="p-1.5 rounded-lg border border-theme-primary/40 bg-theme-surface text-theme-primary text-xs font-bold inline-flex items-center gap-1"
+                        className="p-1.5 rounded-lg border border-theme-primary/40 bg-theme-surface text-theme-primary text-xs font-bold inline-flex items-center gap-1 cursor-pointer"
                         title="Urus Bank Soalan"
                       >
                         <ListOrdered className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Soalan</span>
+                        <span className="hidden sm:inline">Bank</span>
                       </button>
 
                       <button
                         onClick={() => handleOpenEdit(quiz)}
-                        className="p-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-100 text-xs font-semibold"
-                        title="Sunting Kuiz"
+                        className="p-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-100 text-xs font-semibold cursor-pointer"
+                        title="Sunting Kuiz & Soalan"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(quiz.id, quiz.title)}
-                        className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold"
+                        className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold cursor-pointer"
                         title="Padam Kuiz"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -306,207 +251,26 @@ export const AdminQuizzesPage: React.FC<AdminQuizzesPageProps> = ({ navigate }) 
         </div>
       )}
 
-      {/* Create / Edit Quiz Modal */}
+      {/* Bina / Sunting Kuiz Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-200 dark:border-stone-800 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
-              <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                {editId ? 'Sunting Kuiz Latihan' : 'Cipta Kuiz Baharu'}
-              </h3>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-stone-400 hover:text-stone-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                  Tajuk Kuiz <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="cth: Kuiz Bab 1 - Pengenalan Kimia"
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                    Mata Pelajaran <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={subjectId}
-                    onChange={(e) => setSubjectId(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                    required
-                  >
-                    {subjects.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                    Tingkatan <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={tingkatan}
-                    onChange={(e) => setTingkatan(e.target.value as TingkatanType)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                    required
-                  >
-                    {TINGKATAN_OPTIONS.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Conditional DLP Toggle (Only for Matematik and Sains) */}
-              {(() => {
-                const currentSubject = subjects.find((s) => s.id === subjectId);
-                const currentSubjectName = currentSubject?.name || '';
-                const isDlpEligible = currentSubjectName === 'Matematik' || currentSubjectName === 'Sains';
-                if (!isDlpEligible) return null;
-
-                return (
-                  <div className="p-3.5 rounded-2xl border border-sky-200/90 dark:border-sky-800 bg-sky-50/70 dark:bg-sky-950/30 flex items-center justify-between gap-4 animate-fade-in">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-sky-950 dark:text-sky-100">
-                          Versi DLP (English)
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-sky-200 dark:bg-sky-900 text-sky-800 dark:text-sky-200 font-extrabold uppercase tracking-wide">
-                          Dual Language
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
-                        Aktifkan suis ini jika set soalan kuiz disediakan dalam Bahasa Inggeris untuk pelajar kelas DLP ({currentSubjectName}).
-                      </p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                      <input
-                        type="checkbox"
-                        id="quiz-dlp-toggle"
-                        checked={isDLP}
-                        onChange={(e) => setIsDLP(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer dark:bg-stone-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
-                    </label>
-                  </div>
-                );
-              })()}
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                    Masa (Minit)
-                  </label>
-                  <input
-                    type="number"
-                    value={durationMinutes}
-                    onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                    min={1}
-                    max={180}
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                    Jumlah Markah
-                  </label>
-                  <input
-                    type="number"
-                    value={totalMarks}
-                    onChange={(e) => setTotalMarks(Number(e.target.value))}
-                    min={1}
-                    max={100}
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                    Syarat Lulus (%)
-                  </label>
-                  <input
-                    type="number"
-                    value={passPercentage}
-                    onChange={(e) => setPassPercentage(Number(e.target.value))}
-                    min={10}
-                    max={100}
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                  Arahan / Penerangan Kuiz
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Arahan sebelum pelajar memulakan ujian ini..."
-                  rows={3}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="quiz-published-check"
-                  checked={published}
-                  onChange={(e) => setPublished(e.target.checked)}
-                  className="rounded text-theme-primary focus:ring-theme-primary"
-                />
-                <label
-                  htmlFor="quiz-published-check"
-                  className="text-xs font-semibold text-stone-700 dark:text-stone-300"
-                >
-                  Terbitkan terus kepada pelajar (Published)
-                </label>
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t border-stone-100 dark:border-stone-800">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold btn-theme-primary shadow-xs"
-                >
-                  {saving ? 'Menyimpan...' : 'Simpan Kuiz'}
-                </button>
-              </div>
-            </form>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="w-full max-w-4xl my-auto max-h-[92vh] overflow-y-auto rounded-3xl">
+            <BinaKuizForm
+              initialQuiz={selectedQuizForEdit}
+              onSuccess={async () => {
+                setModalOpen(false);
+                setSelectedQuizForEdit(null);
+                await fetchQuizzesAndSubjects();
+              }}
+              onCancel={() => {
+                setModalOpen(false);
+                setSelectedQuizForEdit(null);
+              }}
+            />
           </div>
         </div>
       )}
     </div>
   );
 };
+

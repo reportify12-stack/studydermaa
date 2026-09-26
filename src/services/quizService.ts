@@ -96,7 +96,30 @@ export const getQuizQuestions = async (quizId: string): Promise<Question[]> => {
     );
     const snap = await getDocs(q);
     const questions = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Question));
-    return questions.sort((a, b) => (a.order || 0) - (b.order || 0));
+    if (questions.length > 0) {
+      return questions.sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+
+    // Fallback: check if the quiz document itself contains the embedded questions array
+    const quizDoc = await getDoc(doc(db, 'quizzes', quizId));
+    if (quizDoc.exists()) {
+      const data = quizDoc.data();
+      if (Array.isArray(data.questions) && data.questions.length > 0) {
+        return data.questions.map((item: any, idx: number) => ({
+          id: item.id || `q_${quizId}_${idx}`,
+          quizId,
+          question: item.questionText || item.question || '',
+          type: 'objective' as const,
+          options: item.options || [],
+          correctAnswer: item.correctOptionIndex !== undefined ? item.correctOptionIndex : (item.correctAnswer ?? 0),
+          marks: item.marks || 1,
+          order: idx + 1,
+          createdAt: data.createdAt || new Date().toISOString(),
+        }));
+      }
+    }
+
+    return [];
   } catch (error) {
     console.error('Error fetching quiz questions:', error);
     return [];
