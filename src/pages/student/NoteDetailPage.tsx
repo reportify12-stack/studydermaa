@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti';
 import { useAuth } from '../../contexts/AuthContext';
 import { getNoteById, getUserNoteProgress, markNoteCompleted, toggleNoteBookmark } from '../../services/contentService';
 import { Note, UserNoteProgress } from '../../types';
+import { NoteHtmlRenderer } from '../../components/notes/NoteHtmlRenderer';
 import {
   ArrowLeft,
   CheckCircle,
@@ -250,9 +251,7 @@ export const NoteDetailPage: React.FC<NoteDetailPageProps> = ({ noteId, navigate
 
       {/* Main Content Body */}
       <div className="p-6 sm:p-10 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
-        <div className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200 text-sm sm:text-base leading-relaxed space-y-4 whitespace-pre-line">
-          {note.content}
-        </div>
+        <NoteHtmlRenderer content={note.content} />
       </div>
 
       {/* Bottom Action Footer */}

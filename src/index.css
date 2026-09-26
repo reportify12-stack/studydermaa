@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -139,4 +140,71 @@
 
 .dark .bg-theme-surface {
   background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ReactQuill Custom Styling & Dark Mode Support */
+.quill-editor-wrapper {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.quill-editor-wrapper .ql-toolbar.ql-snow {
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  border-color: #e5e7eb;
+  background-color: #f9fafb;
+  font-family: inherit;
+  padding: 0.5rem 0.75rem;
+}
+
+.dark .quill-editor-wrapper .ql-toolbar.ql-snow {
+  border-color: #374151;
+  background-color: #1f2937;
+}
+
+.dark .quill-editor-wrapper .ql-snow .ql-stroke {
+  stroke: #d1d5db;
+}
+
+.dark .quill-editor-wrapper .ql-snow .ql-fill {
+  fill: #d1d5db;
+}
+
+.dark .quill-editor-wrapper .ql-snow .ql-picker {
+  color: #d1d5db;
+}
+
+.dark .quill-editor-wrapper .ql-snow .ql-picker-options {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.quill-editor-wrapper .ql-container.ql-snow {
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  border-color: #e5e7eb;
+  background-color: #ffffff;
+  font-family: inherit;
+  font-size: 0.875rem;
+  min-height: 220px;
+}
+
+.dark .quill-editor-wrapper .ql-container.ql-snow {
+  border-color: #374151;
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+.quill-editor-wrapper .ql-editor {
+  min-height: 200px;
+  line-height: 1.6;
+}
+
+.quill-editor-wrapper .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+.dark .quill-editor-wrapper .ql-editor.ql-blank::before {
+  color: #6b7280;
 }

@@ -8,6 +8,7 @@ import {
 import { Note, Subject, TingkatanType, TINGKATAN_OPTIONS } from '../../types';
 import { TableSkeleton } from '../../components/common/SkeletonLoader';
 import { EmptyState } from '../../components/common/EmptyState';
+import { NoteRichTextEditor } from '../../components/notes/NoteRichTextEditor';
 import {
   FileText,
   Plus,
@@ -291,7 +292,7 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
       {/* Create / Edit Note Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-2xl bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-200 dark:border-stone-800 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-4xl bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-200 dark:border-stone-800 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
               <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
                 {editId ? 'Sunting Nota Pelajaran' : 'Cipta Nota Pelajaran Baharu'}
@@ -412,15 +413,13 @@ export const AdminNotesPage: React.FC<AdminNotesPageProps> = ({ navigate }) => {
 
               <div>
                 <label className="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">
-                  Kandungan Penuh Nota <span className="text-rose-500">*</span>
+                  Kandungan Penuh Nota (Editor Teks Kaya & Imej) <span className="text-rose-500">*</span>
                 </label>
-                <textarea
+                <NoteRichTextEditor
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Tuliskan nota lengkap mengikut silibus KSSM..."
-                  rows={8}
-                  className="w-full p-3.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-xs sm:text-sm focus:outline-hidden focus:border-theme-primary font-sans leading-relaxed"
-                  required
+                  onChange={setContent}
+                  noteId={editId || undefined}
+                  placeholder="Tuliskan nota lengkap mengikut silibus KSSM. Gunakan bar alatan untuk tebal (bold), condong (italic), garisan bawah (underline), senarai bernombor/bullet, dan masukkan gambar rajah/imej..."
                 />
               </div>
 
