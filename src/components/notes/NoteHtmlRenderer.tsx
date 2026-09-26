@@ -91,23 +91,25 @@ export const NoteHtmlRenderer: React.FC<NoteHtmlRendererProps> = ({
   }
 
   return (
-    <div
-      id="note-student-html-content"
-      className={`prose dark:prose-invert max-w-none prose-stone
-        prose-headings:font-display prose-headings:font-extrabold prose-headings:tracking-tight
-        prose-h1:text-2xl sm:prose-h1:text-3xl prose-h1:mb-4
-        prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:mt-6 prose-h2:mb-3
-        prose-h3:text-lg sm:prose-h3:text-xl prose-h3:mt-4
-        prose-p:leading-relaxed prose-p:text-stone-800 dark:prose-p:text-stone-200
-        prose-li:text-stone-800 dark:prose-li:text-stone-200
-        prose-img:rounded-2xl prose-img:shadow-md prose-img:border prose-img:border-stone-200 dark:prose-img:border-stone-800
-        prose-img:max-h-[500px] prose-img:object-contain prose-img:mx-auto prose-img:my-6
-        prose-a:text-emerald-600 dark:prose-a:text-emerald-400 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
-        prose-blockquote:border-l-emerald-500 prose-blockquote:bg-stone-50/80 dark:prose-blockquote:bg-stone-800/40
-        prose-blockquote:p-4 prose-blockquote:rounded-r-2xl prose-blockquote:italic
-        prose-code:bg-stone-100 dark:prose-code:bg-stone-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md
-        ${className}`}
-      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-    />
+    <div className="w-full overflow-hidden">
+      <div
+        id="note-student-html-content"
+        className={`w-full max-w-none break-words prose dark:prose-invert prose-stone
+          prose-headings:font-display prose-headings:font-extrabold prose-headings:tracking-tight
+          prose-h1:text-2xl sm:prose-h1:text-3xl prose-h1:mb-4
+          prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:mt-6 prose-h2:mb-3
+          prose-h3:text-lg sm:prose-h3:text-xl prose-h3:mt-4
+          prose-p:leading-relaxed prose-p:text-stone-800 dark:prose-p:text-stone-200
+          prose-li:text-stone-800 dark:prose-li:text-stone-200
+          prose-img:rounded-2xl prose-img:shadow-md prose-img:border prose-img:border-stone-200 dark:prose-img:border-stone-800
+          prose-img:max-h-[500px] prose-img:object-contain prose-img:mx-auto prose-img:my-6
+          prose-a:text-emerald-600 dark:prose-a:text-emerald-400 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
+          prose-blockquote:border-l-emerald-500 prose-blockquote:bg-stone-50/80 dark:prose-blockquote:bg-stone-800/40
+          prose-blockquote:p-4 prose-blockquote:rounded-r-2xl prose-blockquote:italic
+          prose-code:bg-stone-100 dark:prose-code:bg-stone-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md
+          ${className}`}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+      />
+    </div>
   );
 };

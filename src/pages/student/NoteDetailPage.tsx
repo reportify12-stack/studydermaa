@@ -250,7 +250,7 @@ export const NoteDetailPage: React.FC<NoteDetailPageProps> = ({ noteId, navigate
       )}
 
       {/* Main Content Body */}
-      <div className="p-6 sm:p-10 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
+      <div className="w-full overflow-hidden p-6 sm:p-10 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
         <NoteHtmlRenderer content={note.content} />
       </div>
 
