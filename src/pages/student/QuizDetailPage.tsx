@@ -45,7 +45,33 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
       try {
         const [q, qList] = await Promise.all([getQuizById(quizId), getQuizQuestions(quizId)]);
         setQuiz(q);
-        setQuestions(qList);
+        
+        let resolvedQuestions = qList;
+        if ((!resolvedQuestions || resolvedQuestions.length === 0) && q && Array.isArray((q as any).questions) && (q as any).questions.length > 0) {
+          resolvedQuestions = (q as any).questions.map((item: any, idx: number) => ({
+            id: item.id || `q_${quizId}_${idx}`,
+            quizId,
+            questionText: item.questionText || item.question || '',
+            question: item.questionText || item.question || '',
+            type: 'objective' as const,
+            options: Array.isArray(item.options) ? item.options : [],
+            correctOptionIndex: item.correctOptionIndex !== undefined ? item.correctOptionIndex : (item.correctAnswer ?? 0),
+            correctAnswer: item.correctOptionIndex !== undefined ? item.correctOptionIndex : (item.correctAnswer ?? 0),
+            marks: item.marks || 1,
+            order: idx + 1,
+            createdAt: q.createdAt || new Date().toISOString(),
+          }));
+        } else if (resolvedQuestions && resolvedQuestions.length > 0) {
+          resolvedQuestions = resolvedQuestions.map((item: any) => ({
+            ...item,
+            questionText: item.questionText || item.question || '',
+            options: Array.isArray(item.options)
+              ? item.options.map((opt: any) => (typeof opt === 'string' ? opt : (opt?.text ?? String(opt))))
+              : [],
+          }));
+        }
+
+        setQuestions(resolvedQuestions);
         if (q) {
           setTimeRemaining(q.durationMinutes * 60);
         }
@@ -377,7 +403,7 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
                 </p>
 
                 {/* Objective Options Review */}
-                {q.type === 'objective' && q.options && (
+                {q.options && q.options.length > 0 && (
                   <div className="space-y-2">
                     {q.options.map((option: any, optIndex: number) => {
                       const optionLabel = optionLetters[optIndex] || String.fromCharCode(65 + optIndex);
@@ -447,7 +473,7 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
   }
 
   // 4. Live Exam Taking View
-  const currentQ = questions[currentQIndex];
+  const currentQuestion = questions[currentQIndex];
   const optionLetters = ['A', 'B', 'C', 'D'];
 
   return (
@@ -479,37 +505,40 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
       </div>
 
       {/* Current Question Card */}
-      {currentQ && (
+      {currentQuestion && (
         <div className="p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 uppercase tracking-wider">
-              {currentQ.type === 'objective' ? 'Objektif' : currentQ.type === 'kbat' ? 'KBAT' : 'Subjektif'}
+              {currentQuestion.type === 'objective' || (currentQuestion.options && currentQuestion.options.length > 0)
+                ? 'Objektif'
+                : currentQuestion.type === 'kbat'
+                ? 'KBAT'
+                : 'Subjektif'}
             </span>
             <span className="text-xs font-semibold text-stone-400">
-              {currentQ.marks || 1} Markah
+              {currentQuestion.marks || 1} Markah
             </span>
           </div>
 
+          {/* Main Question using currentQuestion.questionText */}
           <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 leading-relaxed">
-            {currentQ.questionText || currentQ.question}
+            {currentQuestion.questionText || (currentQuestion as any).question}
           </h2>
 
-          {/* Question Options for Objective */}
-          {currentQ.type === 'objective' && currentQ.options && (
+          {/* Question Options for Objective (mapping simple array of strings) */}
+          {currentQuestion.options && currentQuestion.options.length > 0 && (
             <div className="space-y-3 pt-2">
-              {currentQ.options.map((option: any, optIndex: number) => {
+              {currentQuestion.options.map((option: string, optIndex: number) => {
                 const optionLabel = optionLetters[optIndex] || String.fromCharCode(65 + optIndex);
-                // Ensure text rendered is the mapped string item itself
-                const optionText = typeof option === 'string' ? option : (option?.text ?? String(option));
                 const isSelected =
-                  userAnswers[currentQ.id] === String(optIndex) ||
-                  userAnswers[currentQ.id] === optionLabel;
+                  userAnswers[currentQuestion.id] === String(optIndex) ||
+                  userAnswers[currentQuestion.id] === optionLabel;
 
                 return (
                   <button
                     key={optIndex}
                     type="button"
-                    onClick={() => handleSelectOption(currentQ.id, optIndex)}
+                    onClick={() => handleSelectOption(currentQuestion.id, optIndex)}
                     className={`w-full p-4 rounded-2xl border text-left text-xs sm:text-sm font-medium transition-all flex items-center justify-between cursor-pointer ${
                       isSelected
                         ? 'border-theme-primary ring-2 ring-theme-primary/30 bg-theme-surface text-theme-primary font-bold shadow-xs'
@@ -526,7 +555,7 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
                       >
                         {optionLabel}
                       </span>
-                      <span>{optionText}</span>
+                      <span>{option}</span>
                     </div>
                   </button>
                 );
@@ -534,15 +563,15 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
             </div>
           )}
 
-          {/* Subjective/KBAT Answer Textarea */}
-          {currentQ.type !== 'objective' && (
+          {/* Subjective/KBAT Answer Textarea (if no options) */}
+          {(!currentQuestion.options || currentQuestion.options.length === 0) && (
             <div className="space-y-2 pt-2">
               <label className="text-xs font-semibold text-stone-500">
                 Tuliskan jawapan atau hujah anda:
               </label>
               <textarea
-                value={userAnswers[currentQ.id] || ''}
-                onChange={(e) => handleTextAnswer(currentQ.id, e.target.value)}
+                value={userAnswers[currentQuestion.id] || ''}
+                onChange={(e) => handleTextAnswer(currentQuestion.id, e.target.value)}
                 placeholder="Taip jawapan lengkap di sini..."
                 rows={4}
                 className="w-full p-3.5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 text-xs sm:text-sm text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-theme-primary transition-all"

@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   onAuthStateChanged,
   User as FirebaseUser,
   getIdTokenResult,
@@ -44,6 +45,8 @@ export const formatFirebaseError = (errorCode: string): string => {
       return 'Kata laluan atau username tidak tepat. Sila semak semula.';
     case 'auth/email-already-in-use':
       return 'Emel ini telah digunakan oleh akaun lain.';
+    case 'auth/email-not-verified':
+      return 'Sila sahkan emel anda terlebih dahulu sebelum log masuk. Semak peti masuk (inbox atau spam) emel anda untuk pautan pengesahan.';
     case 'auth/weak-password':
       return 'Kata laluan terlalu lemah. Sila gunakan sekurang-kurangnya 8 aksara.';
     case 'auth/too-many-requests':
@@ -138,6 +141,15 @@ export const registerStudent = async (data: RegisterStudentData): Promise<UserPr
   const userCredential = await createUserWithEmailAndPassword(auth, authEmail, data.password);
   const user = userCredential.user;
 
+  // Send email verification immediately after registration
+  if (user && !user.emailVerified) {
+    try {
+      await sendEmailVerification(user);
+    } catch (verifErr) {
+      console.warn('Gagal menghantar emel pengesahan:', verifErr);
+    }
+  }
+
   // 5. Create Username Registry Document
   const registryDoc: UsernameRecord = {
     uid: user.uid,
@@ -206,6 +218,18 @@ export const loginUser = async (identifier: string, password: string): Promise<U
 
   // Sign in to Firebase Auth
   const userCredential = await signInWithEmailAndPassword(auth, targetAuthEmail, password);
+
+  // Login Block (Verification Check):
+  // Check if (!userCredential.user.emailVerified). If false, immediately log out using signOut(auth)
+  if (!userCredential.user.emailVerified && !targetAuthEmail.endsWith('@auth.study.dermaa.internal')) {
+    await signOut(auth);
+    const verifError: any = new Error(
+      'Sila sahkan emel anda terlebih dahulu sebelum log masuk. Sila semak peti masuk (inbox atau spam) emel anda untuk pautan pengesahan akaun.'
+    );
+    verifError.code = 'auth/email-not-verified';
+    throw verifError;
+  }
+
   const uid = userCredential.user.uid;
 
   // Fetch Firestore Profile

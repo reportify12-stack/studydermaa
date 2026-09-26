@@ -98,13 +98,20 @@ export const getQuizQuestions = async (quizId: string): Promise<Question[]> => {
     const questions = snap.docs.map((d) => {
       const data = d.data();
       const qText = data.questionText || data.question || '';
+      const rawOptions = Array.isArray(data.options) ? data.options : [];
+      const cleanOptions = rawOptions.map((opt: any) =>
+        typeof opt === 'string' ? opt : (opt?.text ?? String(opt))
+      );
+      const correctIdx = data.correctOptionIndex !== undefined ? data.correctOptionIndex : (data.correctAnswer ?? 0);
       return {
         id: d.id,
         ...data,
         question: qText,
         questionText: qText,
-        correctOptionIndex: data.correctOptionIndex !== undefined ? data.correctOptionIndex : data.correctAnswer,
-        correctAnswer: data.correctOptionIndex !== undefined ? data.correctOptionIndex : data.correctAnswer,
+        type: data.type || (cleanOptions.length > 0 ? 'objective' : 'subjective'),
+        options: cleanOptions,
+        correctOptionIndex: correctIdx,
+        correctAnswer: correctIdx,
       } as Question;
     });
 
@@ -120,13 +127,17 @@ export const getQuizQuestions = async (quizId: string): Promise<Question[]> => {
         return data.questions.map((item: any, idx: number) => {
           const qText = item.questionText || item.question || '';
           const correctIdx = item.correctOptionIndex !== undefined ? item.correctOptionIndex : (item.correctAnswer ?? 0);
+          const rawOptions = Array.isArray(item.options) ? item.options : [];
+          const cleanOptions = rawOptions.map((opt: any) =>
+            typeof opt === 'string' ? opt : (opt?.text ?? String(opt))
+          );
           return {
             id: item.id || `q_${quizId}_${idx}`,
             quizId,
             question: qText,
             questionText: qText,
             type: 'objective' as const,
-            options: item.options || [],
+            options: cleanOptions,
             correctOptionIndex: correctIdx,
             correctAnswer: correctIdx,
             marks: item.marks || 1,
