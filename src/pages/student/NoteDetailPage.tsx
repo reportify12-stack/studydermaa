@@ -31,6 +31,11 @@ export const NoteDetailPage: React.FC<NoteDetailPageProps> = ({ noteId, navigate
   const [actionLoading, setActionLoading] = useState(false);
   const [completionBanner, setCompletionBanner] = useState(false);
 
+  // Scroll to top immediately when mounting or switching notes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [noteId]);
+
   useEffect(() => {
     const fetchNote = async () => {
       setLoading(true);

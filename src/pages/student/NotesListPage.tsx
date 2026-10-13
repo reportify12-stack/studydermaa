@@ -34,6 +34,11 @@ export const NotesListPage: React.FC<NotesListPageProps> = ({ navigate }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
+    // Scroll to top immediately when mounting
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
     // Read query params from URL if any
     const params = new URLSearchParams(window.location.search);
     const subParam = params.get('subjectId');

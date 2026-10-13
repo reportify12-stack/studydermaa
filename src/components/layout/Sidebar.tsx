@@ -19,6 +19,9 @@ import {
   ClipboardCheck,
   Film,
   CalendarDays,
+  Compass,
+  HeartHandshake,
+  Layers,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -48,12 +51,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: t('nav_ai_tutor'), path: '/ai-tutor', icon: Sparkles, id: 'nav-ai-tutor', badge: 'KSSM' },
     { label: t('nav_seminars'), path: '/seminars', icon: Video, id: 'nav-seminars' },
     { label: t('nav_study'), path: '/belajar', icon: BookOpen, id: 'nav-belajar' },
+    { label: 'Kad Imbasan', path: '/kad-imbasan', icon: Layers, id: 'nav-flashcards', badge: '3D' },
     { label: t('nav_notes'), path: '/nota', icon: FileText, id: 'nav-nota' },
     { label: t('nav_quiz'), path: '/kuiz', icon: HelpCircle, id: 'nav-kuiz' },
     { label: t('nav_progress'), path: '/progress', icon: TrendingUp, id: 'nav-progress' },
     { label: t('nav_bookmarks'), path: '/bookmark', icon: Bookmark, id: 'nav-bookmark' },
     { label: t('nav_profile'), path: '/profile', icon: User, id: 'nav-profile' },
     { label: t('nav_settings'), path: '/settings', icon: Settings, id: 'nav-settings' },
+    { label: 'Sokongan Pelajar', path: '/sokongan-pelajar', icon: HeartHandshake, id: 'nav-sokongan-pelajar', badge: 'Kaunseling' },
+    { label: 'Tentang Kami', path: '/about-us', icon: Compass, id: 'nav-about-us' },
   ];
 
   const handleItemClick = (path: string) => {
@@ -83,6 +89,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             (item.path === '/bookmark' && (currentRoute === '/bookmark' || currentRoute === '/bookmarks')) ||
             (item.path === '/profile' && (currentRoute === '/profil' || currentRoute === '/profile')) ||
             (item.path === '/settings' && (currentRoute === '/tetapan' || currentRoute === '/settings')) ||
+            (item.path === '/sokongan-pelajar' && (currentRoute === '/sokongan-pelajar' || currentRoute === '/support' || currentRoute === '/kaunseling')) ||
+            (item.path === '/kad-imbasan' && (currentRoute === '/kad-imbasan' || currentRoute === '/flashcards')) ||
             (item.path === '/belajar' && (currentRoute === '/belajar' || currentRoute === '/learn' || currentRoute.startsWith('/subjek/'))) ||
             (item.path === '/nota' && (currentRoute === '/nota' || currentRoute === '/notes' || currentRoute.startsWith('/nota/'))) ||
             (item.path === '/kuiz' && (currentRoute === '/kuiz' || currentRoute === '/quizzes' || currentRoute.startsWith('/kuiz/'))) ||

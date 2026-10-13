@@ -278,5 +278,39 @@ service cloud.firestore {
       // Only admins can create, update, and delete learning videos
       allow create, update, delete: if isAdmin();
     }
+
+    // ====================================================
+    // COUNSELING & STUDENT SUPPORT (counseling_sessions/{sessionId})
+    // ====================================================
+    match /counseling_sessions/{sessionId} {
+      // Students can read their own sessions; teachers, counselors, and admins can read all sessions
+      allow read: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid ||
+        isTeacher() ||
+        isAdmin()
+      );
+
+      // Student can start a counseling session
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+
+      // Student can update their own session; teachers and admins can triage, add notes, and resolve
+      allow update: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid ||
+        isTeacher() ||
+        isAdmin()
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ====================================================
+    // FLASHCARDS (flashcards/{flashcardId})
+    // ====================================================
+    match /flashcards/{flashcardId} {
+      // Authenticated students and teachers can read flashcards
+      allow read: if isSignedIn();
+      // Teachers and Admins can create, update, and delete flashcards
+      allow create, update, delete: if isTeacher() || isAdmin();
+    }
   }
 }

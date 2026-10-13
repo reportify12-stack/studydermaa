@@ -3,17 +3,29 @@ import { getPublishedSubjects } from '../../services/contentService';
 import { Subject, TingkatanType, TINGKATAN_OPTIONS } from '../../types';
 import { EmptyState } from '../../components/common/EmptyState';
 import { CardSkeleton } from '../../components/common/SkeletonLoader';
-import { BookOpen, ArrowRight, Layers, Sparkles } from 'lucide-react';
+import { BookOpen, ArrowRight, Layers, Sparkles, Brain } from 'lucide-react';
+import { FlashcardViewer } from '../../components/flashcards/FlashcardViewer';
 
 interface BelajarPageProps {
   navigate: (route: string) => void;
+  initialTab?: 'subjects' | 'flashcards';
 }
 
-export const BelajarPage: React.FC<BelajarPageProps> = ({ navigate }) => {
+export const BelajarPage: React.FC<BelajarPageProps> = ({ navigate, initialTab }) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTingkatan, setSelectedTingkatan] = useState<TingkatanType>('Tingkatan 1');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
+
+  // Top Tab inside Belajar: 'subjects' (Modul Subjek) vs 'flashcards' (Kad Imbasan)
+  const [activeTab, setActiveTab] = useState<'subjects' | 'flashcards'>(() => {
+    if (initialTab) return initialTab;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'flashcards' || window.location.pathname === '/kad-imbasan') {
+      return 'flashcards';
+    }
+    return 'subjects';
+  });
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -40,32 +52,69 @@ export const BelajarPage: React.FC<BelajarPageProps> = ({ navigate }) => {
 
   return (
     <div id="belajar-page-container" className="space-y-8 pb-12 animate-fade-in">
-      {/* Header */}
-      <div className="p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white/70 dark:bg-stone-900/60 backdrop-blur-md">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-stone-100 font-display tracking-tight mb-2">
-          Kurikulum Standard Sekolah Menengah (KSSM)
-        </h1>
-        <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 max-w-2xl leading-relaxed">
-          Pilih tingkatan dan mata pelajaran untuk mengakses modul nota padat, topik pembelajaran, serta latihan interaktif.
-        </p>
+      {/* Belajar Navigation Tabs: Subjek vs Kad Imbasan */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200/80 dark:border-stone-700 max-w-md">
+        <button
+          onClick={() => setActiveTab('subjects')}
+          className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'subjects'
+              ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-xs'
+              : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-200'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 text-theme-primary" />
+          <span>Modul Subjek</span>
+        </button>
 
-        {/* Tingkatan Selector Pills */}
-        <div className="flex flex-wrap items-center gap-2 mt-6">
-          {TINGKATAN_OPTIONS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setSelectedTingkatan(t)}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                selectedTingkatan === t
-                  ? 'btn-theme-primary shadow-xs scale-102'
-                  : 'border border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/40 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setActiveTab('flashcards')}
+          className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'flashcards'
+              ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-xs'
+              : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-200'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-amber-500" />
+          <span className="flex items-center gap-1.5">
+            <span>Kad Imbasan</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-black">
+              3D
+            </span>
+          </span>
+        </button>
       </div>
+
+      {/* Render Flashcard Tab View */}
+      {activeTab === 'flashcards' ? (
+        <FlashcardViewer initialTingkatan={selectedTingkatan} />
+      ) : (
+        <>
+          {/* Header */}
+          <div className="p-6 sm:p-8 rounded-3xl border border-stone-200/80 dark:border-stone-800 bg-white/70 dark:bg-stone-900/60 backdrop-blur-md">
+            <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-stone-100 font-display tracking-tight mb-2">
+              Kurikulum Standard Sekolah Menengah (KSSM)
+            </h1>
+            <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 max-w-2xl leading-relaxed">
+              Pilih tingkatan dan mata pelajaran untuk mengakses modul nota padat, topik pembelajaran, serta latihan interaktif.
+            </p>
+
+            {/* Tingkatan Selector Pills */}
+            <div className="flex flex-wrap items-center gap-2 mt-6">
+              {TINGKATAN_OPTIONS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTingkatan(t)}
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                    selectedTingkatan === t
+                      ? 'btn-theme-primary shadow-xs scale-102'
+                      : 'border border-stone-200 dark:border-stone-700 bg-white/60 dark:bg-stone-800/40 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
 
       {/* Category Tabs */}
       <div className="flex items-center gap-2 border-b border-stone-200 dark:border-stone-800 pb-3 overflow-x-auto">
@@ -140,6 +189,8 @@ export const BelajarPage: React.FC<BelajarPageProps> = ({ navigate }) => {
             </div>
           ))}
         </div>
+      )}
+        </>
       )}
     </div>
   );

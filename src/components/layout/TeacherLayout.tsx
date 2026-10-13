@@ -11,6 +11,7 @@ import {
   BookOpen,
   LogOut,
   Printer,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface TeacherLayoutProps {
@@ -51,6 +52,12 @@ export const TeacherLayout: React.FC<TeacherLayoutProps> = ({
       path: '/teacher/students',
       icon: Users,
       id: 'teacher-nav-students',
+    },
+    {
+      label: 'Kaunseling & Triage',
+      path: '/teacher/counseling',
+      icon: HeartHandshake,
+      id: 'teacher-nav-counseling',
     },
   ];
 

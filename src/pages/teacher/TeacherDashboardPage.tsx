@@ -37,6 +37,7 @@ import {
   GraduationCap,
   Printer,
   Eye,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface TeacherDashboardPageProps {
@@ -248,6 +249,16 @@ export const TeacherDashboardPage: React.FC<TeacherDashboardPageProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              id="header-counseling-triage-btn"
+              type="button"
+              onClick={() => navigate('/teacher/counseling')}
+              className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-teal-500/30 hover:bg-teal-500/50 text-white border border-white/20 shadow-xs flex items-center gap-2 transition-all cursor-pointer active:scale-[0.98]"
+            >
+              <HeartHandshake className="w-4 h-4 text-teal-200" />
+              <span>Kaunseling & Triage</span>
+            </button>
+
             <button
               id="header-create-class-btn"
               type="button"

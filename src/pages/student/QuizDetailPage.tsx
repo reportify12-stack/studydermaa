@@ -17,7 +17,11 @@ import {
   ChevronLeft,
   Send,
   Loader2,
+  Gamepad2,
 } from 'lucide-react';
+import { QuizModeSelector, QuizModeType } from '../../components/gamification/QuizModeSelector';
+import { DinoSurvivalGame } from '../../components/gamification/DinoSurvivalGame';
+import { Match3PuzzleGame } from '../../components/gamification/Match3PuzzleGame';
 
 interface QuizDetailPageProps {
   quizId: string;
@@ -30,6 +34,9 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Gamification Mode State
+  const [selectedMode, setSelectedMode] = useState<QuizModeType>('focus');
+
   // Exam States
   const [examStarted, setExamStarted] = useState(false);
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -38,6 +45,21 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
   const [submitting, setSubmitting] = useState(false);
   const [attemptResult, setAttemptResult] = useState<QuizAttempt | null>(null);
   const [showReview, setShowReview] = useState(false);
+
+  // Sync answers from gamification games (Dino and Match-3)
+  const handleGameAnswer = (questionId: string, isCorrect: boolean, selectedOptionIndex: number) => {
+    setUserAnswers((prev) => ({
+      ...prev,
+      [questionId]: String(selectedOptionIndex),
+    }));
+
+    const nextUnansweredIdx = questions.findIndex(
+      (q) => q.id !== questionId && userAnswers[q.id] === undefined
+    );
+    if (nextUnansweredIdx !== -1) {
+      setCurrentQIndex(nextUnansweredIdx);
+    }
+  };
 
   useEffect(() => {
     const fetchQuizAndQuestions = async () => {
@@ -245,14 +267,16 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
               Kuiz ini belum mengandungi soalan. Pentadbir akan menambah soalan tidak lama lagi.
             </div>
           ) : (
-            <button
-              id="begin-exam-btn"
-              onClick={() => setExamStarted(true)}
-              className="w-full py-3.5 px-6 rounded-2xl font-black text-sm btn-theme-primary shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>MULAKAN KUIZ SEKARANG</span>
-            </button>
+            <div className="pt-2">
+              <QuizModeSelector
+                selectedMode={selectedMode}
+                onSelectMode={(mode) => setSelectedMode(mode)}
+                onStartQuiz={() => setExamStarted(true)}
+                quizTitle={quiz.title}
+                totalQuestions={questions.length}
+                durationMinutes={quiz.durationMinutes}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -276,15 +300,24 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
           </div>
 
           <div>
-            <span
-              className={`text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider ${
-                isPassed
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-              }`}
-            >
-              {isPassed ? 'Tahniah! Anda Lulus' : 'Perlu Ulangkaji'}
-            </span>
+            <div className="inline-flex items-center gap-2">
+              <span
+                className={`text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider ${
+                  isPassed
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                }`}
+              >
+                {isPassed ? 'Tahniah! Anda Lulus' : 'Perlu Ulangkaji'}
+              </span>
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                {selectedMode === 'survival'
+                  ? '🦖 Mod Survival'
+                  : selectedMode === 'match3'
+                  ? '💎 Mod Teka-Teki'
+                  : '🎯 Mod Fokus'}
+              </span>
+            </div>
             <h2 className="text-3xl font-black text-stone-900 dark:text-stone-100 font-display mt-2">
               {attemptResult.percentage}%
             </h2>
@@ -324,12 +357,12 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
                 setUserAnswers({});
                 setTimeRemaining(quiz.durationMinutes * 60);
                 setCurrentQIndex(0);
-                setExamStarted(true);
+                setExamStarted(false);
               }}
               className="flex-1 py-3 px-4 rounded-xl text-xs font-bold btn-theme-primary shadow-xs flex items-center justify-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Cuba Semula</span>
+              <span>Pilih Mod & Ulang Semula</span>
             </button>
           </div>
 
@@ -472,7 +505,34 @@ export const QuizDetailPage: React.FC<QuizDetailPageProps> = ({ quizId, navigate
     );
   }
 
-  // 4. Live Exam Taking View
+  // 4. Gamified Game Views
+  if (selectedMode === 'survival') {
+    return (
+      <DinoSurvivalGame
+        questions={questions}
+        currentQIndex={currentQIndex}
+        userAnswers={userAnswers}
+        onAnswerQuestion={handleGameAnswer}
+        onFinishQuiz={handleSubmitQuiz}
+        onExitGame={() => setExamStarted(false)}
+      />
+    );
+  }
+
+  if (selectedMode === 'match3') {
+    return (
+      <Match3PuzzleGame
+        questions={questions}
+        currentQIndex={currentQIndex}
+        userAnswers={userAnswers}
+        onAnswerQuestion={handleGameAnswer}
+        onFinishQuiz={handleSubmitQuiz}
+        onExitGame={() => setExamStarted(false)}
+      />
+    );
+  }
+
+  // 5. Standard Live Exam Taking View (Mod Fokus)
   const currentQuestion = questions[currentQIndex];
   const optionLetters = ['A', 'B', 'C', 'D'];
 

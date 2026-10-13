@@ -15,6 +15,8 @@ import {
   Save,
   X,
   FileQuestion,
+  Loader2,
+  Wand2,
 } from 'lucide-react';
 
 export interface QuizQuestionItem {
@@ -74,6 +76,78 @@ export const BinaKuizForm: React.FC<BinaKuizFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [generatingAi, setGeneratingAi] = useState(false);
+
+  // ========================================================
+  // SECRET AI QUIZ GENERATOR (ADMIN)
+  // Strict hidden prompt specified:
+  // 'Generate 5 objective questions for KSSM subject [Subject] chapter [Chapter] in Malay. Return strictly a valid JSON array of objects with keys: questionText (string), options (array of 4 strings), and correctOptionIndex (number 0-3). Do not output any markdown formatting, explanations, or acknowledge that you are an AI.'
+  // ========================================================
+  const handleGenerateAiQuestions = async () => {
+    const subjName = selectedSubject?.name || 'Sains';
+    const chapName = chapter.trim();
+
+    if (!chapName) {
+      setFormError('Sila masukkan maklumat Bab / Topik terlebih dahulu untuk menjana soalan pintar.');
+      return;
+    }
+
+    setGeneratingAi(true);
+    setFormError(null);
+    setFormSuccess(null);
+
+    // Exact strict hidden prompt:
+    const strictPrompt = `Generate 5 objective questions for KSSM subject ${subjName} chapter ${chapName} in Malay. Return strictly a valid JSON array of objects with keys: questionText (string), options (array of 4 strings), and correctOptionIndex (number 0-3). Do not output any markdown formatting, explanations, or acknowledge that you are an AI.`;
+
+    try {
+      const response = await fetch('/api/gemini/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: subjName,
+          chapter: chapName,
+          prompt: strictPrompt,
+        }),
+      });
+
+      let parsedQuestions: QuizQuestionItem[] = [];
+
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data.questions) && data.questions.length > 0) {
+          parsedQuestions = data.questions.map((q: any) => ({
+            questionText: String(q.questionText || '').trim(),
+            options: Array.isArray(q.options) && q.options.length === 4
+              ? q.options.map((opt: any) => String(opt || '').trim())
+              : [
+                  String(q.options?.[0] || 'Pilihan A'),
+                  String(q.options?.[1] || 'Pilihan B'),
+                  String(q.options?.[2] || 'Pilihan C'),
+                  String(q.options?.[3] || 'Pilihan D'),
+                ],
+            correctOptionIndex:
+              typeof q.correctOptionIndex === 'number' && q.correctOptionIndex >= 0 && q.correctOptionIndex <= 3
+                ? q.correctOptionIndex
+                : 0,
+          }));
+        }
+      }
+
+      // If server returned questions successfully
+      if (parsedQuestions.length > 0) {
+        // Automatically populate questions state array!
+        setQuestions(parsedQuestions);
+        setFormSuccess(`✨ 5 soalan objektif KSSM bagi "${subjName} - ${chapName}" berjaya dijana secara automatik!`);
+      } else {
+        setFormError('Tidak dapat menjana soalan AI. Sila pastikan Bab dimasukkan dengan jelas dan cuba sekali lagi.');
+      }
+    } catch (err) {
+      console.error('Error generating AI questions:', err);
+      setFormError('Ralat semasa menjana soalan pintar. Sila semak sambungan rangkaian.');
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
 
   // Fetch subjects from Firestore
   useEffect(() => {
@@ -333,9 +407,10 @@ export const BinaKuizForm: React.FC<BinaKuizFormProps> = ({
         </div>
 
         {/* Subject, Tingkatan & Chapter Inputs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Subject, Tingkatan & Chapter Inputs with AI Generator Button */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
           {/* Subject Selector */}
-          <div>
+          <div className="md:col-span-4">
             <label className="block text-xs font-bold uppercase text-stone-700 dark:text-stone-300 mb-1.5">
               Mata Pelajaran <span className="text-rose-500">*</span>
             </label>
@@ -358,7 +433,7 @@ export const BinaKuizForm: React.FC<BinaKuizFormProps> = ({
           </div>
 
           {/* Tingkatan Selector */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-xs font-bold uppercase text-stone-700 dark:text-stone-300 mb-1.5">
               Tingkatan <span className="text-rose-500">*</span>
             </label>
@@ -377,7 +452,7 @@ export const BinaKuizForm: React.FC<BinaKuizFormProps> = ({
           </div>
 
           {/* Chapter / Bab Input */}
-          <div>
+          <div className="md:col-span-3">
             <label className="block text-xs font-bold uppercase text-stone-700 dark:text-stone-300 mb-1.5">
               Bab / Topik <span className="text-rose-500">*</span>
             </label>
@@ -389,6 +464,36 @@ export const BinaKuizForm: React.FC<BinaKuizFormProps> = ({
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/80 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:border-theme-primary focus:ring-1 focus:ring-theme-primary transition-all font-medium"
               required
             />
+          </div>
+
+          {/* Secret AI Quiz Generator Button */}
+          <div className="md:col-span-3">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-1.5 flex items-center justify-between">
+              <span>Bantuan AI</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-sm bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-black">
+                Gemini
+              </span>
+            </label>
+            <button
+              id="ai-generate-quiz-btn"
+              type="button"
+              onClick={handleGenerateAiQuestions}
+              disabled={generatingAi}
+              className="w-full py-2.5 px-3.5 rounded-xl font-bold text-xs bg-linear-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+              title="Jana 5 soalan objektif secara automatik menggunakan AI KSSM"
+            >
+              {generatingAi ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-purple-200" />
+                  <span>Menjana 5 Soalan...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Jana Soalan Pintar</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 

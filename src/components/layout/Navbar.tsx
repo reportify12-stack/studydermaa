@@ -18,6 +18,9 @@ import {
   Moon,
   GraduationCap,
   ClipboardCheck,
+  Compass,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 import { StreakBadge } from '../common/StreakBadge';
 import { XpBadge } from '../common/XpBadge';
@@ -95,6 +98,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               referrerPolicy="no-referrer"
             />
           </button>
+
+          {/* Desktop Nav Link: Tentang Kami */}
+          <nav className="hidden lg:flex items-center gap-1 ml-1">
+            <button
+              id="navbar-about-us-link"
+              type="button"
+              onClick={() => navigate('/about-us')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                currentRoute === '/about-us' || currentRoute === '/tentang-kami'
+                  ? 'bg-theme-surface text-theme-primary border border-theme-primary/30 shadow-2xs'
+                  : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
+              }`}
+            >
+              Tentang Kami
+            </button>
+          </nav>
         </div>
 
         {/* Center: Search trigger button */}
@@ -263,6 +282,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </button>
                     )}
 
+                    <button
+                      id="dropdown-about-us-link"
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        navigate('/about-us');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-theme-primary" />
+                      <span>Tentang Kami</span>
+                    </button>
+
                     <div className="border-t border-stone-100 dark:border-stone-800 my-1" />
 
                     <button
@@ -278,7 +309,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                id="navbar-about-us-unauth-btn"
+                onClick={() => navigate('/about-us')}
+                className={`hidden sm:inline-flex px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentRoute === '/about-us' || currentRoute === '/tentang-kami'
+                    ? 'text-theme-primary bg-theme-surface font-bold'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                Tentang Kami
+              </button>
               <button
                 id="navbar-login-btn"
                 onClick={() => navigate('/login')}
@@ -297,6 +339,90 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
+
+      {/* Responsive Mobile Menu Panel */}
+      {isMobileMenuOpen && (
+        <div
+          id="navbar-mobile-drawer"
+          className="md:hidden border-b border-stone-200/80 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md px-4 py-4 space-y-3 animate-fade-in shadow-lg"
+        >
+          {/* Main Links */}
+          <div className="space-y-1">
+            <button
+              id="mobile-nav-about-us-btn"
+              onClick={() => {
+                if (typeof onToggleMobileMenu === 'function') onToggleMobileMenu();
+                navigate('/about-us');
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-left transition-all ${
+                currentRoute === '/about-us' || currentRoute === '/tentang-kami'
+                  ? 'bg-theme-surface text-theme-primary border border-theme-primary/30 shadow-2xs'
+                  : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <Compass className="w-4 h-4 text-theme-primary" />
+                <span>Tentang Kami</span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-theme-surface text-theme-primary border border-theme-primary/20">
+                Budaya
+              </span>
+            </button>
+
+            {userProfile ? (
+              <>
+                <button
+                  id="mobile-nav-dashboard-btn"
+                  onClick={() => {
+                    if (typeof onToggleMobileMenu === 'function') onToggleMobileMenu();
+                    navigate(userProfile.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4 text-stone-400" />
+                  <span>Papan Pemuka</span>
+                </button>
+                <button
+                  id="mobile-nav-planner-btn"
+                  onClick={() => {
+                    if (typeof onToggleMobileMenu === 'function') onToggleMobileMenu();
+                    navigate('/planner');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                >
+                  <BookOpen className="w-4 h-4 text-stone-400" />
+                  <span>Student Planner</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  id="mobile-nav-login-btn"
+                  onClick={() => {
+                    if (typeof onToggleMobileMenu === 'function') onToggleMobileMenu();
+                    navigate('/login');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                >
+                  <LogIn className="w-4 h-4 text-stone-400" />
+                  <span>{t('login_button')}</span>
+                </button>
+                <button
+                  id="mobile-nav-register-btn"
+                  onClick={() => {
+                    if (typeof onToggleMobileMenu === 'function') onToggleMobileMenu();
+                    navigate('/register');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold btn-theme-primary shadow-xs mt-1"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>{t('register_button')}</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

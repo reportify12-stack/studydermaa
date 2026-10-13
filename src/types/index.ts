@@ -385,3 +385,54 @@ export interface LearningVideo {
 export * from './languageHub';
 export * from './pksk';
 
+// ==========================================
+// COUNSELING & STUDENT SUPPORT (TRIAGE SYSTEM)
+// ==========================================
+
+export interface CounselingMessage {
+  id: string;
+  sender: 'student' | 'system' | 'counselor' | 'ai';
+  senderName?: string;
+  text: string;
+  timestamp: string;
+  isIntervention?: boolean;
+  flaggedKeywords?: string[];
+}
+
+export interface CounselingSession {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentUsername: string;
+  studentTingkatan?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessageAt: string;
+  status: 'active' | 'urgent' | 'resolved';
+  requires_urgent_attention: boolean;
+  flaggedKeywords: string[];
+  messages: CounselingMessage[];
+  counselorNotes?: string;
+  assignedCounselorName?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
+}
+
+// ==========================================
+// KAD IMBASAN / FLASHCARDS
+// ==========================================
+
+export interface Flashcard {
+  id: string;
+  term: string; // Term / Concept on front
+  definition: string; // Definition / Answer on back
+  subjectId?: string;
+  subjectName: string;
+  chapter?: string;
+  tingkatan?: TingkatanType | string;
+  hint?: string;
+  category?: string; // e.g., 'Konsep', 'Formula', 'Istilah', 'Fakta Sejarah'
+  createdAt: string;
+  updatedAt?: string;
+}
+

@@ -29,6 +29,8 @@ import { AiTutorPage } from './pages/student/AiTutorPage';
 import { LanguageHubPage } from './pages/student/LanguageHubPage';
 import { VideoPembelajaranPage } from './pages/student/VideoPembelajaranPage';
 import { StudentPlannerPage } from './pages/student/StudentPlannerPage';
+import { StudentSupportPage } from './pages/student/StudentSupportPage';
+import { AboutUsPage } from './pages/student/AboutUsPage';
 import { AiTutorWidget } from './components/tutor/AiTutorWidget';
 
 // Pages - Admin
@@ -48,6 +50,7 @@ import { AdminLearningVideosPage } from './pages/admin/AdminLearningVideosPage';
 // Pages - Teacher Portal
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
 import { TeacherSubmissionsPage } from './pages/teacher/TeacherSubmissionsPage';
+import { CounselorDashboardPage } from './pages/teacher/CounselorDashboardPage';
 import { TeacherLayout } from './components/layout/TeacherLayout';
 import { TeacherProtectedRoute } from './components/auth/TeacherProtectedRoute';
 import { RoleProtectedRoute } from './components/auth/RoleProtectedRoute';
@@ -202,6 +205,12 @@ const AppContent: React.FC = () => {
         );
       } else if (currentPath === '/teacher/submissions') {
         teacherSubView = <TeacherSubmissionsPage navigate={navigate} />;
+      } else if (
+        currentPath === '/teacher/counseling' ||
+        currentPath === '/teacher/triage' ||
+        currentPath === '/teacher/support'
+      ) {
+        teacherSubView = <CounselorDashboardPage navigate={navigate} />;
       }
 
       return (
@@ -244,6 +253,31 @@ const AppContent: React.FC = () => {
           </main>
           <footer className="py-6 border-t border-stone-200/80 dark:border-stone-800 text-center text-xs text-stone-400">
             study.dermaa &copy; {new Date().getFullYear()} • Platform Pembelajaran KSSM Malaysia • Belajar. Faham. Kuasai.
+          </footer>
+        </div>
+      );
+    }
+
+    // Public / Shared About Us Route
+    if (
+      currentPath === '/about-us' ||
+      currentPath === '/tentang-kami' ||
+      currentPath === '/about'
+    ) {
+      return (
+        <div className="min-h-screen bg-stone-50/60 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col justify-between">
+          <Navbar
+            onOpenSearch={() => setSearchModalOpen(true)}
+            onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+            isMobileMenuOpen={mobileMenuOpen}
+            currentRoute={currentPath}
+            navigate={navigate}
+          />
+          <main className="max-w-6xl mx-auto px-4 sm:px-6 w-full flex-1 py-4 sm:py-8">
+            <AboutUsPage navigate={navigate} />
+          </main>
+          <footer className="py-6 border-t border-stone-200/80 dark:border-stone-800 text-center text-xs text-stone-400">
+            study.dermaa &copy; {new Date().getFullYear()} • Platform Pembelajaran KSSM Malaysia • Membina Budaya Pembelajaran Positif
           </footer>
         </div>
       );
@@ -401,8 +435,18 @@ const AppContent: React.FC = () => {
       currentPath === '/video'
     ) {
       studentView = <VideoPembelajaranPage navigate={navigate} />;
-    } else if (currentPath === '/belajar' || currentPath === '/learn') {
-      studentView = <BelajarPage navigate={navigate} />;
+    } else if (
+      currentPath === '/belajar' ||
+      currentPath === '/learn' ||
+      currentPath === '/kad-imbasan' ||
+      currentPath === '/flashcards'
+    ) {
+      studentView = (
+        <BelajarPage
+          navigate={navigate}
+          initialTab={currentPath === '/kad-imbasan' || currentPath === '/flashcards' ? 'flashcards' : undefined}
+        />
+      );
     } else if (currentPath === '/nota' || currentPath === '/notes') {
       studentView = <NotesListPage navigate={navigate} />;
     } else if (currentPath === '/kuiz' || currentPath === '/quizzes' || currentPath === '/quiz') {
@@ -421,6 +465,13 @@ const AppContent: React.FC = () => {
       studentView = <AiTutorPage navigate={navigate} />;
     } else if (currentPath === '/language-hub' || currentPath === '/languages' || currentPath === '/bahasa') {
       studentView = <LanguageHubPage navigate={navigate} />;
+    } else if (
+      currentPath === '/sokongan-pelajar' ||
+      currentPath === '/support' ||
+      currentPath === '/kaunseling' ||
+      currentPath === '/sokongan'
+    ) {
+      studentView = <StudentSupportPage navigate={navigate} />;
     } else if (
       currentPath === '/dashboard' ||
       currentPath === '/student-dashboard' ||
